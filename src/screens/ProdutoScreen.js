@@ -21,11 +21,13 @@ export default function ProdutoScreen({ route, navigation }) {
       </Text>
 
       <Button
-        title="Adicionar ao Carrinho"
-        onPress={() => {
-          alert(`${produto.nome} adicionado ao carrinho!`);
-        }}
-      />
+  title="Adicionar ao Carrinho"
+  onPress={() =>
+    navigation.navigate('Carrinho', {
+      produto: produto
+    })
+  }
+/>
 
       <Button
         title="Voltar"

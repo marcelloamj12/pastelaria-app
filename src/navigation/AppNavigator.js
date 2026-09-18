@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from '../screens/HomeScreen';
 import CardapioScreen from '../screens/CardapioScreen';
 import ProdutoScreen from '../screens/ProdutoScreen';
+import CarrinhoScreen from '../screens/CarrinhoScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -28,6 +29,14 @@ export default function AppNavigator() {
         component={ProdutoScreen}
         options={{ title: 'Produto' }}
       />
+
+      <Stack.Screen
+  name="Carrinho"
+  component={CarrinhoScreen}
+  options={{ title: 'Carrinho' }}
+/>
+
+      
 
     </Stack.Navigator>
   );
