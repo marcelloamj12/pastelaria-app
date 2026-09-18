@@ -1,9 +1,30 @@
-import React from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  Button,
+  StyleSheet
+} from 'react-native';
 
 export default function CarrinhoScreen({ route, navigation }) {
 
   const produto = route.params?.produto;
+
+  const [quantidade, setQuantidade] = useState(1);
+
+  function aumentarQuantidade() {
+    setQuantidade(quantidade + 1);
+  }
+
+  function diminuirQuantidade() {
+    if (quantidade > 1) {
+      setQuantidade(quantidade - 1);
+    }
+  }
+
+  const total = produto
+    ? produto.preco * quantidade
+    : 0;
 
   return (
     <View style={styles.container}>
@@ -23,32 +44,64 @@ export default function CarrinhoScreen({ route, navigation }) {
           </Text>
 
           <Text style={styles.preco}>
-            R$ {produto.preco.toFixed(2)}
+            Preço: R$ {produto.preco.toFixed(2)}
           </Text>
 
-          <Text style={styles.quantidade}>
-            Quantidade: 1
+          <Text style={styles.subtitulo}>
+            Quantidade
           </Text>
+
+          <View style={styles.quantidadeContainer}>
+
+            <Button
+              title="-"
+              onPress={diminuirQuantidade}
+            />
+
+            <Text style={styles.quantidade}>
+              {quantidade}
+            </Text>
+
+            <Button
+              title="+"
+              onPress={aumentarQuantidade}
+            />
+
+          </View>
+
+          <Text style={styles.total}>
+            Total: R$ {total.toFixed(2)}
+          </Text>
+
+          <Button
+            title="Finalizar Pedido"
+            onPress={() =>
+              navigation.navigate('Finalizacao', {
+                produto: produto,
+                quantidade: quantidade,
+                total: total
+              })
+            }
+          />
+
         </>
       ) : (
         <Text>Seu carrinho está vazio.</Text>
       )}
 
-      <Button
-        title="Finalizar Pedido"
-        onPress={() => alert('Em breve vamos finalizar o pedido!')}
-      />
-
-      <Button
-        title="Voltar"
-        onPress={() => navigation.goBack()}
-      />
+      <View style={styles.espaco}>
+        <Button
+          title="Voltar"
+          onPress={() => navigation.goBack()}
+        />
+      </View>
 
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -68,14 +121,36 @@ const styles = StyleSheet.create({
   },
 
   preco: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 18,
     marginTop: 10,
   },
 
-  quantidade: {
+  subtitulo: {
     fontSize: 18,
-    marginTop: 10,
+    fontWeight: 'bold',
+    marginTop: 20,
+    marginBottom: 10,
+  },
+
+  quantidadeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 20,
   },
+
+  quantidade: {
+    fontSize: 22,
+    marginHorizontal: 20,
+  },
+
+  total: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+
+  espaco: {
+    marginTop: 10,
+  },
+
 });
