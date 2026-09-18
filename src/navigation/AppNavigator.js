@@ -5,6 +5,7 @@ import HomeScreen from '../screens/HomeScreen';
 import CardapioScreen from '../screens/CardapioScreen';
 import ProdutoScreen from '../screens/ProdutoScreen';
 import CarrinhoScreen from '../screens/CarrinhoScreen';
+import FinalizacaoScreen from '../screens/FinalizacaoScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -34,6 +35,11 @@ export default function AppNavigator() {
   name="Carrinho"
   component={CarrinhoScreen}
   options={{ title: 'Carrinho' }}
+/>
+       <Stack.Screen
+  name="Finalizacao"
+  component={FinalizacaoScreen}
+  options={{ title: 'Finalizar Pedido' }}
 />
 
       
