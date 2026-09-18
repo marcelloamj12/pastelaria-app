@@ -3,8 +3,7 @@ import {
   View,
   Text,
   Button,
-  StyleSheet,
-  Alert
+  StyleSheet
 } from 'react-native';
 
 export default function FinalizacaoScreen({ route, navigation }) {
@@ -14,13 +13,9 @@ export default function FinalizacaoScreen({ route, navigation }) {
   const total = route.params?.total;
 
   function confirmarPedido() {
-
-    Alert.alert(
-      'Pedido realizado!',
-      'Seu pedido foi realizado com sucesso.'
-    );
-
-    navigation.popToTop();
+    navigation.navigate('PedidoConfirmado', {
+      total: total
+    });
   }
 
   return (
