@@ -1,58 +1,98 @@
 import React from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, Text, Button, StyleSheet, ScrollView } from 'react-native';
 
 export default function CardapioScreen({ navigation }) {
 
-  const produto = {
-    id: 1,
-    nome: 'Pastel de Carne',
-    descricao: 'Pastel recheado com carne moída.',
-    preco: 10.00,
-  };
+  const produtos = [
+    {
+      id: 1,
+      nome: 'Pastel de Carne',
+      descricao: 'Pastel recheado com carne moída.',
+      preco: 10.00,
+    },
+    {
+      id: 2,
+      nome: 'Pastel de Queijo',
+      descricao: 'Pastel recheado com queijo.',
+      preco: 9.00,
+    },
+    {
+      id: 3,
+      nome: 'Pastel de Frango',
+      descricao: 'Pastel recheado com frango.',
+      preco: 10.00,
+    },
+    {
+      id: 4,
+      nome: 'Pastel de Calabresa',
+      descricao: 'Pastel recheado com calabresa e queijo.',
+      preco: 12.00,
+    },
+  ];
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
 
       <Text style={styles.titulo}>
         Cardápio
       </Text>
 
-      <Text style={styles.nomeProduto}>
-        {produto.nome}
-      </Text>
+      {produtos.map((produto) => (
 
-      <Text>
-        R$ {produto.preco.toFixed(2)}
-      </Text>
+        <View
+          key={produto.id}
+          style={styles.produto}
+        >
 
-      <Button
-        title="Ver Produto"
-        onPress={() =>
-          navigation.navigate('Produto', {
-            produto: produto
-          })
-        }
-      />
+          <Text style={styles.nomeProduto}>
+            {produto.nome}
+          </Text>
+
+          <Text>
+            {produto.descricao}
+          </Text>
+
+          <Text style={styles.preco}>
+            R$ {produto.preco.toFixed(2)}
+          </Text>
+
+          <Button
+            title="Ver Produto"
+            onPress={() =>
+              navigation.navigate('Produto', {
+                produto: produto
+              })
+            }
+          />
+
+        </View>
+
+      ))}
 
       <Button
         title="Voltar"
         onPress={() => navigation.goBack()}
       />
 
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+
   container: {
-    flex: 1,
-    justifyContent: 'center',
+    flexGrow: 1,
     padding: 20,
   },
 
   titulo: {
     fontSize: 30,
-    marginBottom: 20,
+    fontWeight: 'bold',
+    marginBottom: 25,
+  },
+
+  produto: {
+    marginBottom: 30,
   },
 
   nomeProduto: {
@@ -60,4 +100,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 5,
   },
+
+  preco: {
+    fontSize: 18,
+    marginTop: 5,
+    marginBottom: 10,
+  },
+
 });
