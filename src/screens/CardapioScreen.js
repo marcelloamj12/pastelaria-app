@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -7,19 +7,36 @@ import {
   ScrollView
 } from 'react-native';
 
-import produtos from '../data/produtos';
+import { useCardapio } from '../hooks/useCardapio';
+import { formatarPreco } from '../services/cardapioService';
 
 export default function CardapioScreen({ navigation }) {
+  const {
+    categorias,
+    produtos,
+    setCategoriaAtiva,
+    carregando,
+    erro
+  } = useCardapio();
 
-  const [categoriaSelecionada, setCategoriaSelecionada] = useState('Pasteis');
+  if (carregando) {
+    return (
+      <View style={styles.container}>
+        <Text>Carregando cardápio...</Text>
+      </View>
+    );
+  }
 
-  const produtosFiltrados = produtos.filter(
-    (produto) => produto.categoria === categoriaSelecionada
-  );
+  if (erro) {
+    return (
+      <View style={styles.container}>
+        <Text>Erro ao carregar o cardápio: {erro}</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-
       <Text style={styles.titulo}>
         Cardápio
       </Text>
@@ -29,35 +46,20 @@ export default function CardapioScreen({ navigation }) {
       </Text>
 
       <View style={styles.categorias}>
-
-        <Button
-          title="Pastéis"
-          onPress={() => setCategoriaSelecionada('Pasteis')}
-        />
-
-        <Button
-          title="Bebidas"
-          onPress={() => setCategoriaSelecionada('Bebidas')}
-        />
-
-        <Button
-          title="Combos"
-          onPress={() => setCategoriaSelecionada('Combos')}
-        />
-
+        {categorias.map((categoria) => (
+          <Button
+            key={categoria.id}
+            title={categoria.nome}
+            onPress={() => setCategoriaAtiva(categoria.slug)}
+          />
+        ))}
       </View>
 
-      <Text style={styles.categoriaAtual}>
-        {categoriaSelecionada}
-      </Text>
-
-      {produtosFiltrados.map((produto) => (
-
+      {produtos.map((produto) => (
         <View
           key={produto.id}
           style={styles.produto}
         >
-
           <Text style={styles.nomeProduto}>
             {produto.nome}
           </Text>
@@ -67,7 +69,7 @@ export default function CardapioScreen({ navigation }) {
           </Text>
 
           <Text style={styles.preco}>
-            R$ {produto.preco.toFixed(2)}
+            {formatarPreco(produto.preco)}
           </Text>
 
           <Button
@@ -78,22 +80,18 @@ export default function CardapioScreen({ navigation }) {
               })
             }
           />
-
         </View>
-
       ))}
 
       <Button
         title="Voltar"
         onPress={() => navigation.goBack()}
       />
-
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flexGrow: 1,
     padding: 20,
@@ -116,12 +114,6 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
 
-  categoriaAtual: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-
   produto: {
     marginBottom: 30,
   },
@@ -137,5 +129,4 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginBottom: 10,
   },
-
 });

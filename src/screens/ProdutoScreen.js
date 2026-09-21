@@ -1,13 +1,56 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 
-export default function ProdutoScreen({ route, navigation }) {
+import { buscarProduto, formatarPreco } from '../services/cardapioService';
 
-  const { produto } = route.params;
+export default function ProdutoScreen({ route, navigation }) {
+  const { produto: produtoInicial } = route.params;
+
+  const [produto, setProduto] = useState(produtoInicial);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState(null);
+
+  useEffect(() => {
+    async function carregarProduto() {
+      try {
+        setCarregando(true);
+        setErro(null);
+
+        const dados = await buscarProduto(produtoInicial.id);
+        setProduto(dados);
+      } catch (e) {
+        setErro(e.message);
+      } finally {
+        setCarregando(false);
+      }
+    }
+
+    carregarProduto();
+  }, [produtoInicial.id]);
+
+  if (carregando) {
+    return (
+      <View style={styles.container}>
+        <Text>Carregando produto...</Text>
+      </View>
+    );
+  }
+
+  if (erro) {
+    return (
+      <View style={styles.container}>
+        <Text>Erro ao carregar o produto: {erro}</Text>
+
+        <Button
+          title="Voltar"
+          onPress={() => navigation.goBack()}
+        />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-
       <Text style={styles.titulo}>
         {produto.nome}
       </Text>
@@ -17,23 +60,22 @@ export default function ProdutoScreen({ route, navigation }) {
       </Text>
 
       <Text style={styles.preco}>
-        R$ {produto.preco.toFixed(2)}
+        {formatarPreco(produto.preco)}
       </Text>
 
       <Button
-  title="Adicionar ao Carrinho"
-  onPress={() =>
-    navigation.navigate('Carrinho', {
-      produto: produto
-    })
-  }
-/>
+        title="Adicionar ao Carrinho"
+        onPress={() =>
+          navigation.navigate('Carrinho', {
+            produto: produto
+          })
+        }
+      />
 
       <Button
         title="Voltar"
         onPress={() => navigation.goBack()}
       />
-
     </View>
   );
 }
