@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="logo.png" alt="Salgados do Miltão" width="320">
+    <img src="logo%20pastelaria%20miltao.png" alt="Salgados do Miltão" width="320">
 </p>
 
 # Pastelaria Miltão Mobile Online 🥟
