@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="logo pastelaria miltao.png" alt="Salgados do Miltão" width="320">
+  <img src="logo.png" alt="Salgados do Miltão" width="320">
 </p>
 
 # Pastelaria Miltão Mobile Online 🥟
@@ -88,15 +88,17 @@ npx expo start -c
 | José Luiz | Figma, identidade visual e telas Home, Cardápio e Produto |
 | Adrian Rafael | Supabase, banco de dados, serviços e integração |
 | Antonio Neto | Carrinho, pedidos, fluxo de compra e testes de usabilidade |
+| Nicolas Rian Oliveira | Banco de dados (com o Adrian): preços reais, testes e segurança |
 
 ## 📋 Gerenciamento do projeto
 
 O andamento é acompanhado em um Kanban (PraxiLab) com checklists por tarefa. No Git, cada funcionalidade tem sua branch, depois abre um Pull Request, o líder revisa e só então faz o merge na `main`.
+
 ## ⚠️ Limitações atuais
 
 - O carrinho aceita um produto por vez
-- Os preços de salgados, doces e bebidas no banco são estimativas, a confirmar com a pastelaria
-- As categorias do Figma (com "Combos") ainda não batem 100% com as do banco
+- O banco tem 19 produtos e preços estimados; o cardápio real da pastelaria tem 26 produtos e a atualização está planejada para a N2
+- As categorias do Figma (com "Combos") ainda não batem com as do cardápio real (Pastéis Sabores, Especiais, Doces, Salgados e Bebidas)
 - As cores e a fonte do Figma ainda não foram aplicadas nas telas
 
 ## 📄 Licença
