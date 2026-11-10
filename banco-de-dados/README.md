@@ -11,15 +11,22 @@ No painel do Supabase: **SQL Editor → New query**, cole e rode **nesta ordem**
 2. `02_rls.sql` — Row Level Security (não pule: sem isso o banco fica aberto)
 3. `03_seed.sql` — cardápio da Miltão (deve terminar mostrando 19 produtos em 5 categorias)
 4. `04_rpc_criar_pedido.sql` — função transacional que fecha o pedido
+5. `05_atualiza_cardapio_real.sql` — alinha o cardápio com a foto oficial da pastelaria
+   (deve terminar mostrando **26 produtos** em 5 categorias)
+
+> O `03_seed.sql` foi escrito a partir do Figma e de uma foto ruim do cardápio de papel —
+> por isso vários preços ficaram marcados como "a confirmar". O `05` corrige todos eles,
+> acrescenta os 10 itens que faltavam e esconde os 3 que não existem no cardápio.
+> Os dois arquivos ficam no repositório para o histórico da modelagem não se perder.
 
 ## Modelo
 
 ![Diagrama ER](diagrama-er.png)
 
 ```
-categorias  1 ──< produtos
-clientes    1 ──< pedidos
-pedidos     1 ──< itens_pedido >── 1  produtos
+categorias 1 ──< produtos
+clientes 1 ──< pedidos
+pedidos 1 ──< itens_pedido >── 1 produtos
 ```
 
 `itens_pedido` é a tabela associativa que resolve o N:N entre pedidos e produtos e guarda
