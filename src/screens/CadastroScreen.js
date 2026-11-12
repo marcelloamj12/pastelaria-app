@@ -47,8 +47,11 @@ export default function CadastroScreen({ navigation }) {
       setSenha('');
 
     } catch (error) {
-      Alert.alert('Erro no cadastro', error.message);
-    } finally {
+  Alert.alert(
+    'Não foi possível realizar o cadastro',
+    'Verifique os dados informados ou tente fazer login.'
+  );
+}    finally {
       setCarregando(false);
     }
   }
