@@ -54,6 +54,15 @@ export async function fazerLogin({ email, senha }) {
 
   if (error) throw new Error(error.message);
 
+  // Detecta a tentativa de cadastro com um e-mail já registrado.
+  if (
+    data.user &&
+    Array.isArray(data.user.identities) &&
+    data.user.identities.length === 0
+  ) {
+    throw new Error('Não foi possível realizar o cadastro.');
+  }
+
   return data;
 }
 
