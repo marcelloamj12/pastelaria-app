@@ -49,7 +49,7 @@ export default function CadastroScreen({ navigation }) {
     } catch (error) {
   Alert.alert(
     'Não foi possível realizar o cadastro',
-    'Verifique os dados informados ou tente fazer login.'
+    'Verifique os dados informados.'
   );
 }    finally {
       setCarregando(false);
