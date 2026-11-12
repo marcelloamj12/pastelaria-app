@@ -72,6 +72,20 @@ export default function HomeScreen({ navigation }) {
         title="Ver Cardápio"
         onPress={() => navigation.navigate('Cardapio')}
       />
+
+      <View style={styles.espaco} />
+
+      <Button
+        title="Entrar na conta"
+        onPress={() => navigation.navigate('Login')}
+      />
+
+      <View style={styles.espaco} />
+
+      <Button
+        title="Criar uma conta"
+        onPress={() => navigation.navigate('Cadastro')}
+      />
     </View>
   );
 }
