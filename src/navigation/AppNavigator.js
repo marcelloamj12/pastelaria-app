@@ -7,11 +7,12 @@ import ProdutoScreen from '../screens/ProdutoScreen';
 import CarrinhoScreen from '../screens/CarrinhoScreen';
 import FinalizacaoScreen from '../screens/FinalizacaoScreen';
 import PedidoConfirmadoScreen from '../screens/PedidoConfirmadoScreen';
+import CadastroScreen from '../screens/CadastroScreen';
+import LoginScreen from '../screens/LoginScreen';
 
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
-
   return (
     <Stack.Navigator initialRouteName="Home">
 
@@ -52,6 +53,18 @@ export default function AppNavigator() {
           title: 'Pedido Confirmado',
           headerBackVisible: false
         }}
+      />
+
+      <Stack.Screen
+        name="Cadastro"
+        component={CadastroScreen}
+        options={{ title: 'Criar conta' }}
+      />
+
+      <Stack.Screen
+        name="Login"
+        component={LoginScreen}
+        options={{ title: 'Entrar' }}
       />
 
     </Stack.Navigator>
