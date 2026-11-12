@@ -46,20 +46,22 @@ export async function fazerLogin({ email, senha }) {
     throw new Error('Informe seu e-mail e sua senha.');
   }
 
+  // Verifica se já existe uma sessão ativa
+  const sessaoAtual = await obterSessao();
+
+  if (sessaoAtual) {
+    throw new Error(
+      'Você já está conectado a uma conta. Faça logout antes de entrar novamente.'
+    );
+  }
+
   const { data, error } = await supabase.auth.signInWithPassword({
     email: email.trim(),
     password: senha,
   });
 
-  if (error) throw new Error(error.message);
-
-  // Detecta a tentativa de cadastro com um e-mail já registrado.
-  if (
-    data.user &&
-    Array.isArray(data.user.identities) &&
-    data.user.identities.length === 0
-  ) {
-    throw new Error('Não foi possível realizar o cadastro.');
+  if (error) {
+    throw new Error(error.message);
   }
 
   return data;
