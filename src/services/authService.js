@@ -25,7 +25,18 @@ export async function cadastrarUsuario({ nome, email, senha }) {
     },
   });
 
-  if (error) throw new Error(error.message);
+  // if (error) throw new Error(error.message);
+
+  if (error) {
+  if (
+    error.message.includes('already registered') ||
+    error.message.includes('User already registered')
+  ) {
+    throw new Error('Este e-mail já está cadastrado. Tente fazer login.');
+  }
+
+  throw new Error(error.message);
+}
 
   return data;
 }
