@@ -31,7 +31,7 @@ export async function cadastrarUsuario({ nome, email, senha }) {
     error.message.includes('already registered') ||
     error.message.includes('User already registered')
   ) {
-    throw new Error('Este e-mail já está cadastrado. Tente fazer login.');
+    throw new Error('Não foi possível realizar o cadastro.');
   }
 
   throw new Error(error.message);
@@ -51,7 +51,7 @@ export async function fazerLogin({ email, senha }) {
 
   if (sessaoAtual) {
     throw new Error(
-      'Você já está conectado a uma conta. Faça logout antes de entrar novamente.'
+      'Nao foi possivel realizar o login'
     );
   }
 

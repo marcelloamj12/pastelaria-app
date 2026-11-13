@@ -1,12 +1,36 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, Text, Button, StyleSheet, Alert, } from 'react-native';
+
+import { fazerLogout, obterSessao, } from '../services/authService';
 
 import { listarDestaques, formatarPreco } from '../services/cardapioService';
 
 export default function HomeScreen({ navigation }) {
   const [destaques, setDestaques] = useState([]);
   const [carregando, setCarregando] = useState(true);
+  const [sessao, setSessao] = useState(null);
   const [erro, setErro] = useState(null);
+
+useEffect(() => {
+  async function verificarSessao() {
+    try {
+      const sessaoAtual = await obterSessao();
+      setSessao(sessaoAtual);
+    } catch (error) {
+      Alert.alert('Erro', error.message);
+    }
+  }
+
+  verificarSessao();
+
+  const unsubscribe = navigation.addListener(
+    'focus',
+    verificarSessao
+  );
+
+  return unsubscribe;
+}, [navigation]);
+
 
   useEffect(() => {
     async function carregarDestaques() {
@@ -25,6 +49,23 @@ export default function HomeScreen({ navigation }) {
 
     carregarDestaques();
   }, []);
+
+
+async function sairDaConta() {
+  try {
+    await fazerLogout();
+
+    setSessao(null);
+
+    Alert.alert(
+      'Logout realizado',
+      'Você saiu da sua conta com sucesso.'
+    );
+  } catch (error) {
+    Alert.alert('Erro ao sair da conta', error.message);
+  }
+}
+
 
   return (
     <View style={styles.container}>
@@ -75,18 +116,27 @@ export default function HomeScreen({ navigation }) {
 
       <View style={styles.espaco} />
 
-      <Button
-        title="Entrar na conta"
-        onPress={() => navigation.navigate('Login')}
-      />
+      {sessao ? (
+  <Button
+    title="Sair da conta"
+    onPress={sairDaConta}
+    color="red"
+  />
+) : (
+  <>
+    <Button
+      title="Entrar na conta"
+      onPress={() => navigation.navigate('Login')}
+    />
 
-      <View style={styles.espaco} />
+    <View style={styles.espaco} />
 
-      <Button
-        title="Criar uma conta"
-        onPress={() => navigation.navigate('Cadastro')}
-      />
-    </View>
+    <Button
+      title="Criar uma conta"
+      onPress={() => navigation.navigate('Cadastro')}
+    />
+  </>
+)}  </View>  
   );
 }
 

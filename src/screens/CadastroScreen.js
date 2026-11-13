@@ -80,7 +80,7 @@ export default function CadastroScreen({ navigation }) {
 
       <TextInput
         style={styles.input}
-        placeholder="Senha"
+        placeholder="Senha (minimo 6 caracteres)"
         value={senha}
         onChangeText={setSenha}
         secureTextEntry
