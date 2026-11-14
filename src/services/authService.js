@@ -1,4 +1,8 @@
 
+// Serviços de autenticaçao, aqui é onde ocorre a criaçao e verificaçao das contas autenticadas.
+// Checagem de sessao ativa para usuarios comuns ou admins.
+
+
 import { supabase } from '../lib/supabase';
 
 // Cadastro de um novo usuário

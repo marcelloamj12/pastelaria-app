@@ -47,7 +47,8 @@ USING (user_id = auth.uid());
 -- 3. funcao e trigger de cricao automatica de perfil
 --  toda vez que um novo usuário é inserido em 'auth.users',
 --  um perfil é criado como 'user'. isso significa que ninguem pode
---  inicialmente se cadastrar como ADMIN.
+--  inicialmente se cadastrar como ADMIN. essa mudanca é feita
+--  no supabase
 ----------------------------------------------------
 
 CREATE OR REPLACE FUNCTION public.criar_perfil_usuario()
