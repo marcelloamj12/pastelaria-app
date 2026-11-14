@@ -74,11 +74,9 @@ export default function LoginScreen({ navigation }) {
 
       <View style={styles.espaco} />
 
-      <Button
-        title="Criar uma conta"
-        onPress={() => navigation.navigate('Cadastro')}
-      />
+     
     </View>
+
   );
 }
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, Alert, } from 'react-native';
+import { View, Text, Button, StyleSheet, Alert, TouchableOpacity, } from 'react-native';
 
 import { fazerLogout, } from '../services/authService';
 
@@ -126,7 +126,10 @@ async function sairDaConta() {
         onPress={() => navigation.navigate('Cardapio')}
       />
 
+      <View style={styles.espaco}/>
+
       {!carregandoAuth && sessao && perfil?.role === 'admin' && (
+
   <View style={styles.espaco}>
     <Button
       title="Painel Administrativo"
@@ -144,20 +147,15 @@ async function sairDaConta() {
     color="red"
   />
 ) : (
-  <>
-    <Button
-      title="Entrar na conta"
-      onPress={() => navigation.navigate('Login')}
-    />
-
-    <View style={styles.espaco} />
-
-    <Button
-      title="Criar uma conta"
-      onPress={() => navigation.navigate('Cadastro')}
-    />
-  </>
-     )}  
+  <TouchableOpacity
+    style={styles.acessoAdminContainer}
+    onPress={() => navigation.navigate('Login')}
+  >
+    <Text style={styles.acessoAdminTexto}>
+      Acesso administrativo
+    </Text>
+  </TouchableOpacity>
+)}  
    </View>  
   );
 }
@@ -206,6 +204,17 @@ const styles = StyleSheet.create({
   fontSize: 16,
   fontWeight: 'bold',
   marginBottom: 15,
+},
+
+acessoAdminContainer: {
+  marginTop: 25,
+  alignItems: 'center',
+},
+
+acessoAdminTexto: {
+  fontSize: 12,
+  color: '#888',
+  textDecorationLine: 'underline',
 },
 
 });
