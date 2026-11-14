@@ -136,7 +136,8 @@ async function sairDaConta() {
       onPress={() => navigation.navigate('Cadastro')}
     />
   </>
-)}  </View>  
+     )}  
+   </View>  
   );
 }
 
