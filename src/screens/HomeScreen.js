@@ -1,35 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, Alert, } from 'react-native';
 
-import { fazerLogout, obterSessao, } from '../services/authService';
+import { fazerLogout, } from '../services/authService';
 
 import { listarDestaques, formatarPreco } from '../services/cardapioService';
+
+import { useAuth } from '../context/AuthContext';
 
 export default function HomeScreen({ navigation }) {
   const [destaques, setDestaques] = useState([]);
   const [carregando, setCarregando] = useState(true);
-  const [sessao, setSessao] = useState(null);
   const [erro, setErro] = useState(null);
 
-useEffect(() => {
-  async function verificarSessao() {
-    try {
-      const sessaoAtual = await obterSessao();
-      setSessao(sessaoAtual);
-    } catch (error) {
-      Alert.alert('Erro', error.message);
-    }
-  }
-
-  verificarSessao();
-
-  const unsubscribe = navigation.addListener(
-    'focus',
-    verificarSessao
-  );
-
-  return unsubscribe;
-}, [navigation]);
+const {
+  sessao,
+  perfil,
+  carregando: carregandoAuth,
+  erroPerfil,
+} = useAuth();
 
 
   useEffect(() => {
@@ -55,8 +43,6 @@ async function sairDaConta() {
   try {
     await fazerLogout();
 
-    setSessao(null);
-
     Alert.alert(
       'Logout realizado',
       'Você saiu da sua conta com sucesso.'
@@ -69,6 +55,26 @@ async function sairDaConta() {
 
   return (
     <View style={styles.container}>
+
+    {carregandoAuth ? (
+  <Text>Carregando sua conta...</Text>
+   ) : sessao ? (
+  <Text style={styles.subtitulo}>
+    Bem-vindo, {perfil?.nome || 'usuário'}!
+  </Text>
+   ) : (
+  <Text style={styles.subtitulo}>
+    Bem-vindo!
+  </Text>
+   )}
+
+    {erroPerfil && (
+  <Text>
+    Não foi possível carregar seu perfil: {erroPerfil}
+  </Text>
+   )}
+
+
       <Text style={styles.titulo}>Menu Digital</Text>
 
       <Text style={styles.subtitulo}>Mais pedidos</Text>
@@ -136,7 +142,8 @@ async function sairDaConta() {
       onPress={() => navigation.navigate('Cadastro')}
     />
   </>
-)}  </View>  
+     )}  
+   </View>  
   );
 }
 
@@ -173,4 +180,5 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginBottom: 10,
   },
+
 });

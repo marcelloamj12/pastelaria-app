@@ -108,3 +108,14 @@ export async function buscarMeuPerfil() {
 
   return data;
 }
+
+// Observar mudanças na autenticação
+export function observarMudancasAutenticacao(callback) {
+  const { data } = supabase.auth.onAuthStateChange(
+    (_evento, sessao) => {
+      callback(sessao);
+    }
+  );
+
+  return data.subscription;
+}
