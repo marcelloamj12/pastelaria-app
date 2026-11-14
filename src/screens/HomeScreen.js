@@ -147,12 +147,13 @@ async function sairDaConta() {
     color="red"
   />
 ) : (
+
   <TouchableOpacity
     style={styles.acessoAdminContainer}
     onPress={() => navigation.navigate('Login')}
   >
     <Text style={styles.acessoAdminTexto}>
-      Acesso administrativo
+      Area do Dono
     </Text>
   </TouchableOpacity>
 )}  
@@ -207,12 +208,12 @@ const styles = StyleSheet.create({
 },
 
 acessoAdminContainer: {
-  marginTop: 25,
+  marginTop: 100,
   alignItems: 'center',
 },
 
 acessoAdminTexto: {
-  fontSize: 12,
+  fontSize: 8,
   color: '#888',
   textDecorationLine: 'underline',
 },

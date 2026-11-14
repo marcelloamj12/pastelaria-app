@@ -7,7 +7,6 @@ import ProdutoScreen from '../screens/ProdutoScreen';
 import CarrinhoScreen from '../screens/CarrinhoScreen';
 import FinalizacaoScreen from '../screens/FinalizacaoScreen';
 import PedidoConfirmadoScreen from '../screens/PedidoConfirmadoScreen';
-// import CadastroScreen from '../screens/CadastroScreen';
 import LoginScreen from '../screens/LoginScreen';
 import AdminScreen from '../screens/AdminScreen';
 import ClientesAdminScreen from '../screens/ClientesAdminScreen';

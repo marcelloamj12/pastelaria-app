@@ -72,8 +72,6 @@ export default function LoginScreen({ navigation }) {
         disabled={carregando}
       />
 
-      <View style={styles.espaco} />
-
      
     </View>
 
