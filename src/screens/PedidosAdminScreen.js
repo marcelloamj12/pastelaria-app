@@ -29,22 +29,6 @@ const STATUS_RETIRADA = [
   { valor: 'entregue', texto: 'Entregue' },
 ];
 
-function obterProximoStatus(pedido) {
-  const fluxo = pedido.tipo === 'retirada'
-    ? STATUS_RETIRADA
-    : STATUS_ENTREGA;
-
-  const indiceAtual = fluxo.findIndex(
-    (item) => item.valor === pedido.status
-  );
-
-  if (indiceAtual === -1 || indiceAtual === fluxo.length - 1) {
-    return null;
-  }
-
-  return fluxo[indiceAtual + 1];
-}
-
 
 export default function PedidosAdminScreen() {
   const [pedidos, setPedidos] = useState([]);
@@ -119,7 +103,6 @@ export default function PedidosAdminScreen() {
         <Text>Nenhum pedido cadastrado.</Text>
       ) : (
         pedidos.map((pedido) => {
-  const proximoStatus = obterProximoStatus(pedido);
 
   return (
           <View key={pedido.id} style={styles.item}>
@@ -154,19 +137,34 @@ export default function PedidosAdminScreen() {
               Total: R$ {Number(pedido.total).toFixed(2)}
             </Text>
 
-           {proximoStatus && (
-  <TouchableOpacity
-    style={styles.botaoStatus}
-    disabled={pedidoAtualizando === pedido.id}
-    onPress={() => alterarStatus(pedido.id, proximoStatus.valor)}
-  >
-    <Text style={styles.textoBotaoStatus}>
-      {pedidoAtualizando === pedido.id
-        ? 'Atualizando...'
-        : `Avançar para: ${proximoStatus.texto}`}
-    </Text>
-  </TouchableOpacity>
-)}
+          <View style={styles.listaStatus}>
+  {(pedido.tipo === 'retirada'
+    ? STATUS_RETIRADA
+    : STATUS_ENTREGA
+  ).map((status) => (
+    <TouchableOpacity
+      key={status.valor}
+      style={[
+        styles.opcaoStatus,
+        pedido.status === status.valor && styles.statusSelecionado,
+      ]}
+      disabled={
+        pedidoAtualizando !== null ||
+        pedido.status === status.valor
+      }
+      onPress={() => alterarStatus(pedido.id, status.valor)}
+    >
+      <Text
+        style={[
+          styles.textoStatus,
+          pedido.status === status.valor && styles.textoStatusSelecionado,
+        ]}
+      >
+        {status.texto}
+      </Text>
+    </TouchableOpacity>
+  ))}
+</View>
           </View>
           );
 })
