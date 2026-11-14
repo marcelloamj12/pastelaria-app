@@ -110,3 +110,50 @@ export async function listarItensPedidosAdmin() {
 
   return data ?? [];
 }
+
+
+// Atualiza o status de um pedido, somente para admins
+
+export async function atualizarStatusPedido({ pedidoId, novoStatus }) {
+  await verificarAdmin();
+
+  if (!pedidoId) {
+    throw new Error('Pedido não informado.');
+  }
+
+  const { data: pedido, error: erroPedido } = await supabase
+    .from('pedidos')
+    .select('id, tipo')
+    .eq('id', pedidoId)
+    .maybeSingle();
+
+  if (erroPedido) {
+    throw new Error(erroPedido.message);
+  }
+
+  if (!pedido) {
+    throw new Error('Pedido não encontrado.');
+  }
+
+  const statusPermitidos = pedido.tipo === 'retirada'
+    ? ['recebido', 'em_preparo', 'pronto', 'entregue']
+    : ['recebido', 'em_preparo', 'saiu_entrega', 'entregue'];
+
+  if (!statusPermitidos.includes(novoStatus)) {
+    throw new Error('Status inválido para este tipo de pedido.');
+  }
+
+  const { data, error } = await supabase
+    .from('pedidos')
+    .update({ status: novoStatus })
+    .eq('id', pedidoId)
+    .select('id, numero, status, tipo')
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
