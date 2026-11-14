@@ -78,6 +78,18 @@ FOR EACH ROW
 EXECUTE FUNCTION public.criar_perfil_usuario();
 
 
+-----------------------------------------------
+-- 4. comando para checar o cargo de um perfil
+----------------------------------------------
+SELECT
+    u.email,
+    p.nome,
+    p.role
+FROM auth.users u
+JOIN public.perfis p
+    ON p.user_id = u.id
+WHERE u.email = 'SEU_EMAIL_AQUI';
+
 
 ---------------------------------------------
 -- fim do arquivo (este arquivo pode receber modificacoes futuras)
