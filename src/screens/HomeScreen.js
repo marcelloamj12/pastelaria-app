@@ -148,6 +148,11 @@ async function sairDaConta() {
 }
 
 const styles = StyleSheet.create({
+
+  espaco: {
+  height: 15,
+  },
+
   container: {
     flex: 1,
     justifyContent: 'center',
