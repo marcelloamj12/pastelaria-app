@@ -74,6 +74,12 @@ async function sairDaConta() {
   </Text>
    )}
 
+   {!carregandoAuth && sessao && perfil?.role === 'admin' && (
+  <Text style={styles.identificacaoAdmin}>
+    ADMINISTRADOR
+  </Text>
+)}
+
 
       <Text style={styles.titulo}>Menu Digital</Text>
 
@@ -119,6 +125,15 @@ async function sairDaConta() {
         title="Ver Cardápio"
         onPress={() => navigation.navigate('Cardapio')}
       />
+
+      {!carregandoAuth && sessao && perfil?.role === 'admin' && (
+  <View style={styles.espaco}>
+    <Button
+      title="Painel Administrativo"
+      onPress={() => navigation.navigate('Admin')}
+    />
+  </View>
+)}
 
       <View style={styles.espaco} />
 
@@ -185,5 +200,12 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginBottom: 10,
   },
+
+  identificacaoAdmin: {
+  color: '#15803D',
+  fontSize: 16,
+  fontWeight: 'bold',
+  marginBottom: 15,
+},
 
 });
