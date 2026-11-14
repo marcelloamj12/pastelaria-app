@@ -9,14 +9,73 @@ import {
   ScrollView,
   StyleSheet,
   ActivityIndicator,
+  TouchableOpacity,
+  Alert,
 } from 'react-native';
 
-import { listarPedidosAdmin } from '../services/adminService';
+import { listarPedidosAdmin, atualizarStatusPedido, } from '../services/adminService';
+
+const STATUS_ENTREGA = [
+  { valor: 'recebido', texto: 'Recebido' },
+  { valor: 'em_preparo', texto: 'Em preparo' },
+  { valor: 'saiu_entrega', texto: 'Saiu para entrega' },
+  { valor: 'entregue', texto: 'Entregue' },
+];
+
+const STATUS_RETIRADA = [
+  { valor: 'recebido', texto: 'Recebido' },
+  { valor: 'em_preparo', texto: 'Em preparo' },
+  { valor: 'pronto', texto: 'Pronto p/ retirada' },
+  { valor: 'entregue', texto: 'Entregue' },
+];
+
+function obterProximoStatus(pedido) {
+  const fluxo = pedido.tipo === 'retirada'
+    ? STATUS_RETIRADA
+    : STATUS_ENTREGA;
+
+  const indiceAtual = fluxo.findIndex(
+    (item) => item.valor === pedido.status
+  );
+
+  if (indiceAtual === -1 || indiceAtual === fluxo.length - 1) {
+    return null;
+  }
+
+  return fluxo[indiceAtual + 1];
+}
+
 
 export default function PedidosAdminScreen() {
   const [pedidos, setPedidos] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
+  const [pedidoAtualizando, setPedidoAtualizando] = useState(null);
+
+  async function alterarStatus(pedidoId, novoStatus) {
+  try {
+    setPedidoAtualizando(pedidoId);
+
+    const pedidoAtualizado = await atualizarStatusPedido({
+      pedidoId,
+      novoStatus,
+    });
+
+    setPedidos((pedidosAtuais) =>
+      pedidosAtuais.map((pedido) =>
+        pedido.id === pedidoId
+          ? { ...pedido, status: pedidoAtualizado.status }
+          : pedido
+      )
+    );
+
+    Alert.alert('Sucesso', 'Status do pedido atualizado.');
+  } catch (error) {
+    Alert.alert('Erro', error.message);
+  } finally {
+    setPedidoAtualizando(null);
+  }
+}
 
   useEffect(() => {
     async function carregarPedidos() {
@@ -59,7 +118,10 @@ export default function PedidosAdminScreen() {
       {pedidos.length === 0 ? (
         <Text>Nenhum pedido cadastrado.</Text>
       ) : (
-        pedidos.map((pedido) => (
+        pedidos.map((pedido) => {
+  const proximoStatus = obterProximoStatus(pedido);
+
+  return (
           <View key={pedido.id} style={styles.item}>
             <Text style={styles.nome}>
               Pedido #{pedido.numero}
@@ -73,15 +135,41 @@ export default function PedidosAdminScreen() {
               Telefone: {pedido.clientes?.telefone || 'Não informado'}
             </Text>
 
-            <Text>Status: {pedido.status}</Text>
+            <Text>
+               Status: {
+                pedido.status === 'pronto' && pedido.tipo === 'retirada'
+                  ? 'Pronto p/ retirada'
+                    : pedido.status === 'em_preparo'
+                      ? 'Em preparo'
+                        : pedido.status === 'saiu_entrega'
+                          ? 'Saiu para entrega'
+                          : pedido.status.charAt(0).toUpperCase() + pedido.status.slice(1)
+                        }
+            </Text>
+
             <Text>Tipo: {pedido.tipo}</Text>
             <Text>Pagamento: {pedido.pagamento}</Text>
 
             <Text>
               Total: R$ {Number(pedido.total).toFixed(2)}
             </Text>
+
+           {proximoStatus && (
+  <TouchableOpacity
+    style={styles.botaoStatus}
+    disabled={pedidoAtualizando === pedido.id}
+    onPress={() => alterarStatus(pedido.id, proximoStatus.valor)}
+  >
+    <Text style={styles.textoBotaoStatus}>
+      {pedidoAtualizando === pedido.id
+        ? 'Atualizando...'
+        : `Avançar para: ${proximoStatus.texto}`}
+    </Text>
+  </TouchableOpacity>
+)}
           </View>
-        ))
+          );
+})
       )}
     </ScrollView>
   );
@@ -112,6 +200,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 8,
   },
+
+  botaoStatus: {
+  backgroundColor: '#15803D',
+  padding: 12,
+  borderRadius: 8,
+  marginTop: 12,
+  alignItems: 'center',
+},
+
+textoBotaoStatus: {
+  color: '#FFFFFF',
+  fontWeight: 'bold',
+},
 
   erro: {
     color: 'red',

@@ -135,6 +135,7 @@ export async function atualizarStatusPedido({ pedidoId, novoStatus }) {
     throw new Error('Pedido não encontrado.');
   }
 
+  // verifica se os status correspondem ao tipo
   const statusPermitidos = pedido.tipo === 'retirada'
     ? ['recebido', 'em_preparo', 'pronto', 'entregue']
     : ['recebido', 'em_preparo', 'saiu_entrega', 'entregue'];
