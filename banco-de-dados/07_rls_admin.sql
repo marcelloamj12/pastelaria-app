@@ -10,7 +10,12 @@ DROP POLICY IF EXISTS "clientes: N1 demo" ON public.clientes;
 DROP POLICY IF EXISTS "pedidos: N1 demo" ON public.pedidos;
 DROP POLICY IF EXISTS "itens: N1 demo" ON public.itens_pedido;
 
--- CLIENTES: administrador pode consultar e excluir
+-- CLIENTES: administrador pode consultar
+
+DROP POLICY IF EXISTS "clientes: admin consulta"
+ON public.clientes;
+
+
 CREATE POLICY "clientes: admin consulta"
 ON public.clientes
 FOR SELECT
@@ -49,7 +54,11 @@ WITH CHECK (
     )
 );
 
--- PEDIDOS: administrador pode consultar e excluir
+-- PEDIDOS: administrador pode consultar
+
+DROP POLICY IF EXISTS "pedidos: admin consulta"
+ON public.pedidos;
+
 CREATE POLICY "pedidos: admin consulta"
 ON public.pedidos
 FOR SELECT
@@ -63,20 +72,15 @@ USING (
     )
 );
 
-CREATE POLICY "pedidos: admin exclui"
-ON public.pedidos
-FOR DELETE
-TO authenticated
-USING (
-    EXISTS (
-        SELECT 1
-        FROM public.perfis p
-        WHERE p.user_id = auth.uid()
-          AND p.role = 'admin'
-    )
-);
+-- caso a policie de excluir ainda existir
+DROP POLICY IF EXISTS "pedidos: admin exclui"
+ON public.pedidos;
 
 -- ITENS: administrador pode consultar
+
+DROP POLICY IF EXISTS "itens: admin consulta"
+ON public.itens_pedido;
+
 CREATE POLICY "itens: admin consulta"
 ON public.itens_pedido
 FOR SELECT
