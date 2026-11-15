@@ -24,11 +24,23 @@ USING (
     )
 );
 
-CREATE POLICY "clientes: admin exclui"
-ON public.clientes
-FOR DELETE
+-- PEDIDOS: administrador pode atualizar o status
+DROP POLICY IF EXISTS "pedidos: admin atualiza status"
+ON public.pedidos;
+
+CREATE POLICY "pedidos: admin atualiza status"
+ON public.pedidos
+FOR UPDATE
 TO authenticated
 USING (
+    EXISTS (
+        SELECT 1
+        FROM public.perfis p
+        WHERE p.user_id = auth.uid()
+          AND p.role = 'admin'
+    )
+)
+WITH CHECK (
     EXISTS (
         SELECT 1
         FROM public.perfis p
@@ -78,7 +90,14 @@ USING (
     )
 );
 
+-- garantir a possibilidade de atualizar o status
+
+REVOKE UPDATE ON TABLE public.pedidos FROM authenticated;
+
+GRANT UPDATE (status)
+ON TABLE public.pedidos
+TO authenticated;
 
 --------------------------------------------
--- fim de 09_rlsTEST (mudanças podem ocorrer!)
+-- fim do arquivo (mudanças podem ocorrer!)
 ----------------------------------------------

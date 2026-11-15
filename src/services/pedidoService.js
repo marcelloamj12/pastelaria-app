@@ -82,8 +82,18 @@ export async function criarPedido({
  */
 export async function listarPedidosPorTelefone(telefone) {
   const somenteNumeros = (telefone ?? '').replace(/\D/g, '');
-  if (somenteNumeros.length < 10) return [];
+  if (somenteNumeros.length < 10 || somenteNumeros.length > 11) {
+    return []; 
+  }
 
+ // app chama funçao em vez de consulta direta
+
+  const { data, error } = await supabase.rpc('meus_pedidos', {
+    p_telefone: somenteNumeros,
+  });
+
+
+  /*
   const { data: cliente, error: erroCliente } = await supabase
     .from('clientes')
     .select('id')
@@ -101,6 +111,7 @@ export async function listarPedidosPorTelefone(telefone) {
     `)
     .eq('cliente_id', cliente.id)
     .order('criado_em', { ascending: false });
+*/
 
   if (error) throw new Error(`Não foi possível carregar seus pedidos: ${error.message}`);
   return data ?? [];
