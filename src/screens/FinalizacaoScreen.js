@@ -52,6 +52,7 @@ export default function FinalizacaoScreen({ route, navigation }) {
       numero: pedido.numero,
       total: pedido.total,
       status: pedido.status,
+      telefone: telefone.trim(),
     });
 
   } catch (error) {
