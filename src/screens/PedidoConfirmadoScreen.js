@@ -5,10 +5,13 @@ import {
   Button,
   StyleSheet
 } from 'react-native';
+import { STATUS_PEDIDO } from '../services/pedidoService';
 
 export default function PedidoConfirmadoScreen({ route, navigation }) {
 
   const total = route.params?.total;
+  const numero = route.params?.numero;
+const status = route.params?.status;
 
   function voltarInicio() {
     navigation.popToTop();
@@ -24,6 +27,16 @@ export default function PedidoConfirmadoScreen({ route, navigation }) {
       <Text style={styles.mensagem}>
         Seu pedido foi realizado com sucesso.
       </Text>
+
+      {numero && (
+  <Text>Número do pedido: {numero}</Text>
+    )}
+
+    {status && (
+      <Text>
+        Status: {STATUS_PEDIDO[status]?.texto ?? status}
+      </Text>
+    )}
 
       {total !== undefined && (
         <Text style={styles.total}>

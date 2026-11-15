@@ -68,7 +68,20 @@ export async function fazerLogin({ email, senha }) {
     throw new Error(error.message);
   }
 
+  try {
+  const perfil = await buscarMeuPerfil();
+
+  if (perfil.role !== 'admin') {
+    throw new Error('Acesso permitido somente para administradores.');
+  }
+
   return data;
+
+} catch (error) {
+  await supabase.auth.signOut();
+  throw error;
+}
+
 }
 
 // Encerrar a sessão
