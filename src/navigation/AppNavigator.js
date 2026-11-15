@@ -7,11 +7,15 @@ import ProdutoScreen from '../screens/ProdutoScreen';
 import CarrinhoScreen from '../screens/CarrinhoScreen';
 import FinalizacaoScreen from '../screens/FinalizacaoScreen';
 import PedidoConfirmadoScreen from '../screens/PedidoConfirmadoScreen';
+import LoginScreen from '../screens/LoginScreen';
+import AdminScreen from '../screens/AdminScreen';
+import ClientesAdminScreen from '../screens/ClientesAdminScreen';
+import PedidosAdminScreen from '../screens/PedidosAdminScreen';
+import ItensPedidosAdminScreen from '../screens/ItensPedidosAdminScreen';
 
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
-
   return (
     <Stack.Navigator initialRouteName="Home">
 
@@ -52,6 +56,37 @@ export default function AppNavigator() {
           title: 'Pedido Confirmado',
           headerBackVisible: false
         }}
+      />
+ 
+
+      <Stack.Screen
+        name="Login"
+        component={LoginScreen}
+        options={{ title: 'Entrar' }}
+      />
+
+      <Stack.Screen
+        name="Admin"
+        component={AdminScreen}
+        options={{ title: 'Painel Administrativo' }}
+      />
+
+      <Stack.Screen
+        name="ClientesAdmin"
+        component={ClientesAdminScreen}
+        options={{ title: 'Clientes' }}
+      />
+
+      <Stack.Screen
+        name="PedidosAdmin"
+        component={PedidosAdminScreen}
+        options={{ title: 'Pedidos' }}
+      />
+
+      <Stack.Screen
+        name="ItensPedidosAdmin"
+        component={ItensPedidosAdminScreen}
+        options={{ title: 'Itens dos Pedidos' }}
       />
 
     </Stack.Navigator>

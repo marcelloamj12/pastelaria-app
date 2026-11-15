@@ -1,4 +1,8 @@
 
+// Serviços de autenticaçao, aqui é onde ocorre a criaçao e verificaçao das contas autenticadas.
+// Checagem de sessao ativa para usuarios comuns ou admins.
+
+
 import { supabase } from '../lib/supabase';
 
 // Cadastro de um novo usuário
@@ -24,6 +28,18 @@ export async function cadastrarUsuario({ nome, email, senha }) {
       },
     },
   });
+  
+
+  if (error) {
+  if (
+    error.message.includes('already registered') ||
+    error.message.includes('User already registered')
+  ) {
+    throw new Error('Não foi possível realizar o cadastro.');
+  }
+
+  throw new Error(error.message);
+}
 
   if (error) throw new Error(error.message);
 
@@ -36,10 +52,37 @@ export async function fazerLogin({ email, senha }) {
     throw new Error('Informe seu e-mail e sua senha.');
   }
 
+  // Verifica se já existe uma sessão ativa
+  const sessaoAtual = await obterSessao();
+
+  if (sessaoAtual) {
+    throw new Error(
+      'Nao foi possivel realizar o login'
+    );
+  }
+
   const { data, error } = await supabase.auth.signInWithPassword({
     email: email.trim(),
     password: senha,
   });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  try {
+  const perfil = await buscarMeuPerfil();
+
+  if (perfil.role !== 'admin') {
+    throw new Error('Acesso permitido somente para administradores.');
+  }
+
+  return data;
+
+} catch (error) {
+  await supabase.auth.signOut();
+  throw error;
+}
 
   if (error) throw new Error(error.message);
 
@@ -86,4 +129,15 @@ export async function buscarMeuPerfil() {
   }
 
   return data;
+}
+
+// Observar mudanças na autenticação
+export function observarMudancasAutenticacao(callback) {
+  const { data } = supabase.auth.onAuthStateChange(
+    (_evento, sessao) => {
+      callback(sessao);
+    }
+  );
+
+  return data.subscription;
 }

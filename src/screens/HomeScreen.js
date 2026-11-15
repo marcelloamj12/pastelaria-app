@@ -1,12 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, Text, Button, StyleSheet, Alert, TouchableOpacity, } from 'react-native';
+
+import { fazerLogout, } from '../services/authService';
 
 import { listarDestaques, formatarPreco } from '../services/cardapioService';
+
+import { useAuth } from '../context/AuthContext';
 
 export default function HomeScreen({ navigation }) {
   const [destaques, setDestaques] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
+
+const {
+  sessao,
+  perfil,
+  carregando: carregandoAuth,
+  erroPerfil,
+} = useAuth();
+
 
   useEffect(() => {
     async function carregarDestaques() {
@@ -26,9 +38,53 @@ export default function HomeScreen({ navigation }) {
     carregarDestaques();
   }, []);
 
+
+async function sairDaConta() {
+  try {
+    await fazerLogout();
+
+    Alert.alert(
+      'Logout realizado',
+      'Você saiu da sua conta com sucesso.'
+    );
+  } catch (error) {
+    Alert.alert('Erro ao sair da conta', error.message);
+  }
+}
+
+
   return (
     <View style={styles.container}>
+
+    {carregandoAuth ? (
+  <Text>Carregando sua conta...</Text>
+   ) : sessao ? (
+  <Text style={styles.subtitulo}>
+    Bem-vindo, {perfil?.nome || 'usuário'}!
+  </Text>
+   ) : (
+  <Text style={styles.subtitulo}>
+    Bem-vindo!
+  </Text>
+   )}
+
+    {erroPerfil && (
+  <Text>
+    Não foi possível carregar seu perfil: {erroPerfil}
+  </Text>
+   )}
+
+   {!carregandoAuth && sessao && perfil?.role === 'admin' && (
+  <Text style={styles.identificacaoAdmin}>
+    ADMINISTRADOR
+  </Text>
+)}
+
+
       <Text style={styles.titulo}>Menu Digital</Text>
+
+    {perfil?.role !== 'admin' && (
+      <>
 
       <Text style={styles.subtitulo}>Mais pedidos</Text>
 
@@ -67,16 +123,66 @@ export default function HomeScreen({ navigation }) {
           />
         </View>
       ))}
+      </>
+)}
+
 
       <Button
         title="Ver Cardápio"
         onPress={() => navigation.navigate('Cardapio')}
       />
-    </View>
+
+      <View style={styles.espaco}/>
+
+      {!carregandoAuth && sessao && perfil?.role === 'admin' && (
+
+  <View>
+
+        <View style={styles.espaco} />
+
+    <TouchableOpacity
+  style={styles.botaoAdmin}
+  onPress={() => navigation.navigate('Admin')}
+>
+  <Text style={styles.textoBotaoAdmin}>
+ Painel Administrativo
+  </Text>
+</TouchableOpacity>
+
+        <View style={styles.espaco} />
+
+  </View>
+)}
+
+      <View style={styles.espaco} />
+
+      {sessao ? (
+  <Button
+    title="Sair da conta"
+    onPress={sairDaConta}
+    color="red"
+  />
+) : (
+
+  <TouchableOpacity
+    style={styles.acessoAdminContainer}
+    onPress={() => navigation.navigate('Login')}
+  >
+    <Text style={styles.acessoAdminTexto}>
+      Area do Dono
+    </Text>
+  </TouchableOpacity>
+)}  
+   </View>  
   );
 }
 
 const styles = StyleSheet.create({
+
+  espaco: {
+  height: 15,
+  },
+
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -109,4 +215,36 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginBottom: 10,
   },
+
+  identificacaoAdmin: {
+  color: '#15803D',
+  fontSize: 16,
+  fontWeight: 'bold',
+  marginBottom: 15,
+},
+
+acessoAdminContainer: {
+  marginTop: 100,
+  alignItems: 'center',
+},
+
+acessoAdminTexto: {
+  fontSize: 8,
+  color: '#888',
+  textDecorationLine: 'underline',
+},
+
+ botaoAdmin: {
+  backgroundColor: '#2563EB',
+  padding: 10,
+  borderRadius: 4 ,
+  alignItems: 'center',
+}, 
+
+textoBotaoAdmin: {
+  color: '#f5f3f3',
+  fontSize: 16,
+  fontWeight: 'bold',
+},
+
 });
