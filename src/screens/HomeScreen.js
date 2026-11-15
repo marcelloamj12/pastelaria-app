@@ -83,6 +83,9 @@ async function sairDaConta() {
 
       <Text style={styles.titulo}>Menu Digital</Text>
 
+    {perfil?.role !== 'admin' && (
+      <>
+
       <Text style={styles.subtitulo}>Mais pedidos</Text>
 
       {carregando && (
@@ -120,6 +123,9 @@ async function sairDaConta() {
           />
         </View>
       ))}
+      </>
+)}
+
 
       <Button
         title="Ver Cardápio"
@@ -130,11 +136,21 @@ async function sairDaConta() {
 
       {!carregandoAuth && sessao && perfil?.role === 'admin' && (
 
-  <View style={styles.espaco}>
-    <Button
-      title="Painel Administrativo"
-      onPress={() => navigation.navigate('Admin')}
-    />
+  <View>
+
+        <View style={styles.espaco} />
+
+    <TouchableOpacity
+  style={styles.botaoAdmin}
+  onPress={() => navigation.navigate('Admin')}
+>
+  <Text style={styles.textoBotaoAdmin}>
+ Painel Administrativo
+  </Text>
+</TouchableOpacity>
+
+        <View style={styles.espaco} />
+
   </View>
 )}
 
@@ -216,6 +232,19 @@ acessoAdminTexto: {
   fontSize: 8,
   color: '#888',
   textDecorationLine: 'underline',
+},
+
+ botaoAdmin: {
+  backgroundColor: '#2563EB',
+  padding: 10,
+  borderRadius: 4 ,
+  alignItems: 'center',
+}, 
+
+textoBotaoAdmin: {
+  color: '#f5f3f3',
+  fontSize: 16,
+  fontWeight: 'bold',
 },
 
 });
