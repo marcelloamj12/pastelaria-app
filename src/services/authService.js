@@ -41,6 +41,8 @@ export async function cadastrarUsuario({ nome, email, senha }) {
   throw new Error(error.message);
 }
 
+  if (error) throw new Error(error.message);
+
   return data;
 }
 
@@ -82,6 +84,9 @@ export async function fazerLogin({ email, senha }) {
   throw error;
 }
 
+  if (error) throw new Error(error.message);
+
+  return data;
 }
 
 // Encerrar a sessão
