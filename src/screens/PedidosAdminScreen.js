@@ -162,12 +162,12 @@ export default function PedidosAdminScreen() {
       >
         {status.texto}
       </Text>
-    </TouchableOpacity>
-  ))}
-</View>
+          </TouchableOpacity>
+        ))}
+        </View>
           </View>
           );
-})
+        })
       )}
     </ScrollView>
   );
@@ -198,19 +198,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 8,
   },
-
-  botaoStatus: {
-  backgroundColor: '#15803D',
-  padding: 12,
-  borderRadius: 8,
-  marginTop: 12,
-  alignItems: 'center',
-},
-
-textoBotaoStatus: {
-  color: '#FFFFFF',
-  fontWeight: 'bold',
-},
 
   erro: {
     color: 'red',
