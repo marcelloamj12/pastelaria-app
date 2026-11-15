@@ -4,6 +4,31 @@
 -- a respeito das RLS N2 que estao no arquivo 02_rls.sql, se sera usado ele ou um novo.)
 -----------------------------------------------------
 
+-- Verifica se o usuário autenticado é administrador
+-- 
+-- RETURNS boolean: retorna true ou false.
+-- STABLE: informa que a função não altera dados e mantém o resultado estável durante a consulta.
+-- SET search_path = '': evita que objetos de outros schemas sejam usados indevidamente.
+
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+    SELECT EXISTS (
+        SELECT 1
+        FROM public.perfis p
+        WHERE p.user_id = auth.uid()
+          AND p.role = 'admin'
+    );
+$$;
+
+-- Restringir a execução aos usuários autenticados
+REVOKE ALL ON FUNCTION public.is_admin() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.is_admin() TO authenticated;
+
 
 -- Remover as políticas abertas de demonstração (nao executado ainda)
 DROP POLICY IF EXISTS "clientes: N1 demo" ON public.clientes;
@@ -21,12 +46,7 @@ ON public.clientes
 FOR SELECT
 TO authenticated
 USING (
-    EXISTS (
-        SELECT 1
-        FROM public.perfis p
-        WHERE p.user_id = auth.uid()
-          AND p.role = 'admin'
-    )
+    public.is_admin()
 );
 
 -- PEDIDOS: administrador pode atualizar o status
@@ -38,20 +58,10 @@ ON public.pedidos
 FOR UPDATE
 TO authenticated
 USING (
-    EXISTS (
-        SELECT 1
-        FROM public.perfis p
-        WHERE p.user_id = auth.uid()
-          AND p.role = 'admin'
-    )
+    public.is_admin()
 )
 WITH CHECK (
-    EXISTS (
-        SELECT 1
-        FROM public.perfis p
-        WHERE p.user_id = auth.uid()
-          AND p.role = 'admin'
-    )
+    public.is_admin()
 );
 
 -- PEDIDOS: administrador pode consultar
@@ -64,12 +74,7 @@ ON public.pedidos
 FOR SELECT
 TO authenticated
 USING (
-    EXISTS (
-        SELECT 1
-        FROM public.perfis p
-        WHERE p.user_id = auth.uid()
-          AND p.role = 'admin'
-    )
+    public.is_admin()
 );
 
 -- caso a policie de excluir ainda existir
@@ -86,12 +91,7 @@ ON public.itens_pedido
 FOR SELECT
 TO authenticated
 USING (
-    EXISTS (
-        SELECT 1
-        FROM public.perfis p
-        WHERE p.user_id = auth.uid()
-          AND p.role = 'admin'
-    )
+    public.is_admin()
 );
 
 -- garantir a possibilidade de atualizar o status
