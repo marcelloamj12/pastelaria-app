@@ -1,8 +1,13 @@
+
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, TouchableOpacity } from 'react-native';
 
 import { buscarProduto, formatarPreco } from '../services/cardapioService';
+<<<<<<< HEAD
 import { cores } from '../theme/theme';
+=======
+import { useCarrinho } from '../context/CarrinhoContext';
+>>>>>>> 439331e (feat: implementar carrinho com multiplos produtos)
 
 export default function ProdutoScreen({ route, navigation }) {
   const { produto: produtoInicial } = route.params;
@@ -10,6 +15,8 @@ export default function ProdutoScreen({ route, navigation }) {
   const [produto, setProduto] = useState(produtoInicial);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
+
+  const { adicionarProduto } = useCarrinho();
 
   useEffect(() => {
     async function carregarProduto() {
@@ -28,6 +35,15 @@ export default function ProdutoScreen({ route, navigation }) {
 
     carregarProduto();
   }, [produtoInicial.id]);
+
+  function adicionarAoCarrinho() {
+    if (!produto) {
+      return;
+    }
+
+    adicionarProduto(produto);
+    navigation.navigate('Carrinho');
+  }
 
   if (carregando) {
     return (
@@ -50,6 +66,18 @@ export default function ProdutoScreen({ route, navigation }) {
     );
   }
 
+  if (!produto) {
+    return (
+      <View style={styles.container}>
+        <Text>Produto não encontrado.</Text>
+        <Button
+          title="Voltar"
+          onPress={() => navigation.goBack()}
+        />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.titulo}>
@@ -64,6 +92,7 @@ export default function ProdutoScreen({ route, navigation }) {
         {formatarPreco(produto.preco)}
       </Text>
 
+<<<<<<< HEAD
       <TouchableOpacity
   style={styles.botaoCarrinho}
   onPress={() =>
@@ -76,6 +105,12 @@ export default function ProdutoScreen({ route, navigation }) {
     Adicionar ao Carrinho
   </Text>
 </TouchableOpacity>
+=======
+      <Button
+        title="Adicionar ao Carrinho"
+        onPress={adicionarAoCarrinho}
+      />
+>>>>>>> 439331e (feat: implementar carrinho com multiplos produtos)
 
       <TouchableOpacity
   style={styles.botaoVoltar}
