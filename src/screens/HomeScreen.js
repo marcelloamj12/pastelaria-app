@@ -168,24 +168,32 @@ async function sairDaConta() {
             {formatarPreco(produto.preco)}
           </Text>
 
-          <Button
-            title="Ver Produto"
-            onPress={() =>
-              navigation.navigate('Produto', {
-                produto: produto
-              })
-            }
-          />
+          <TouchableOpacity
+  style={styles.botaoProduto}
+  onPress={() =>
+    navigation.navigate('Produto', {
+      produto: produto
+    })
+  }
+>
+  <Text style={styles.textoBotaoProduto}>
+    Ver Produto
+  </Text>
+</TouchableOpacity>
         </View>
       ))}
       </>
 )}
 
 
-      <Button
-        title="Ver Cardápio"
-        onPress={() => navigation.navigate('Cardapio')}
-      />
+      <TouchableOpacity
+  style={styles.botaoCardapio}
+  onPress={() => navigation.navigate('Cardapio')}
+>
+  <Text style={styles.textoBotaoCardapio}>
+    Ver Cardápio Completo
+  </Text>
+</TouchableOpacity>
 
       <View style={styles.espaco}/>
 
@@ -233,6 +241,36 @@ async function sairDaConta() {
 }
 
 const styles = StyleSheet.create({
+
+botaoCardapio: {
+  backgroundColor: cores.primaria,
+  paddingVertical: 15,
+  paddingHorizontal: 20,
+  borderRadius: 12,
+  alignItems: 'center',
+  marginTop: 10,
+},
+
+textoBotaoCardapio: {
+  color: cores.branco,
+  fontSize: 16,
+  fontWeight: '700',
+},
+
+botaoProduto: {
+  backgroundColor: cores.primaria,
+  paddingVertical: 12,
+  paddingHorizontal: 16,
+  borderRadius: 10,
+  alignItems: 'center',
+  marginTop: 12,
+},
+
+textoBotaoProduto: {
+  color: cores.branco,
+  fontSize: 15,
+  fontWeight: '600',
+},
 
   categoriasTitulo: {
     fontSize: 22,
@@ -340,8 +378,13 @@ conteudo: {
   },
 
   produto: {
-    marginBottom: 20,
-  },
+  backgroundColor: cores.branco,
+  borderWidth: 1,
+  borderColor: cores.borda,
+  borderRadius: 16,
+  padding: 16,
+  marginBottom: 16,
+},
 
   nomeProduto: {
     fontSize: 18,
