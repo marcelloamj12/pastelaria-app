@@ -4,20 +4,23 @@ import {
   Text,
   Button,
   StyleSheet,
-  ScrollView
+  ScrollView,
+  TouchableOpacity
 } from 'react-native';
 
 import { useCardapio } from '../hooks/useCardapio';
 import { formatarPreco } from '../services/cardapioService';
+import { cores } from '../theme/theme';
 
 export default function CardapioScreen({ navigation, route }) {
   const {
-    categorias,
-    produtos,
-    setCategoriaAtiva,
-    carregando,
-    erro
-  } = useCardapio(route.params?.categoriaSlug ?? null);
+  categorias,
+  produtos,
+  categoriaAtiva,
+  setCategoriaAtiva,
+  carregando,
+  erro
+} = useCardapio(route.params?.categoriaSlug ?? null);
 
   if (carregando) {
     return (
@@ -46,14 +49,26 @@ export default function CardapioScreen({ navigation, route }) {
       </Text>
 
       <View style={styles.categorias}>
-        {categorias.map((categoria) => (
-          <Button
-            key={categoria.id}
-            title={categoria.nome}
-            onPress={() => setCategoriaAtiva(categoria.slug)}
-          />
-        ))}
-      </View>
+  {categorias.map((categoria) => (
+    <TouchableOpacity
+      key={categoria.id}
+      style={[
+  styles.categoriaBotao,
+  categoriaAtiva === categoria.slug && styles.categoriaBotaoAtivo
+]}
+      onPress={() => setCategoriaAtiva(categoria.slug)}
+    >
+      <Text
+  style={[
+    styles.categoriaTexto,
+    categoriaAtiva === categoria.slug && styles.categoriaTextoAtivo
+  ]}
+>
+        {categoria.nome}
+      </Text>
+    </TouchableOpacity>
+  ))}
+</View>
 
       {produtos.map((produto) => (
         <View
@@ -72,61 +87,141 @@ export default function CardapioScreen({ navigation, route }) {
             {formatarPreco(produto.preco)}
           </Text>
 
-          <Button
-            title="Ver Produto"
-            onPress={() =>
-              navigation.navigate('Produto', {
-                produto: produto
-              })
-            }
-          />
+          <TouchableOpacity
+  style={styles.botaoProduto}
+  onPress={() =>
+    navigation.navigate('Produto', {
+      produto: produto
+    })
+  }
+>
+  <Text style={styles.textoBotaoProduto}>
+    Ver Produto
+  </Text>
+</TouchableOpacity>
         </View>
       ))}
 
-      <Button
-        title="Voltar"
-        onPress={() => navigation.goBack()}
-      />
+      <TouchableOpacity
+  style={styles.botaoVoltar}
+  onPress={() => navigation.goBack()}
+>
+  <Text style={styles.textoBotaoVoltar}>
+    Voltar
+  </Text>
+</TouchableOpacity>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+
+categoriaBotaoAtivo: {
+  backgroundColor: cores.primaria,
+  borderColor: cores.primaria,
+},
+
+categoriaTextoAtivo: {
+  color: cores.branco,
+},
+
+botaoVoltar: {
+  backgroundColor: cores.branco,
+  borderWidth: 1,
+  borderColor: cores.primaria,
+  borderRadius: 10,
+  paddingVertical: 14,
+  alignItems: 'center',
+  marginTop: 10,
+  marginBottom: 20,
+},
+
+textoBotaoVoltar: {
+  color: cores.primaria,
+  fontSize: 15,
+  fontWeight: '600',
+},
+
+botaoProduto: {
+  backgroundColor: cores.primaria,
+  paddingVertical: 12,
+  paddingHorizontal: 16,
+  borderRadius: 10,
+  alignItems: 'center',
+  marginTop: 8,
+},
+
+textoBotaoProduto: {
+  color: cores.branco,
+  fontSize: 15,
+  fontWeight: '600',
+},
+
   container: {
-    flexGrow: 1,
-    padding: 20,
-  },
+  flexGrow: 1,
+  padding: 20,
+  backgroundColor: cores.fundo,
+},
 
   titulo: {
-    fontSize: 30,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
+  fontSize: 28,
+  fontWeight: '700',
+  color: cores.texto,
+  marginBottom: 20,
+},
 
   subtitulo: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
+  fontSize: 20,
+  fontWeight: '700',
+  color: cores.texto,
+  marginBottom: 14,
+},
 
   categorias: {
-    gap: 10,
-    marginBottom: 25,
-  },
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  gap: 10,
+  marginBottom: 25,
+},
+
+categoriaBotao: {
+  backgroundColor: cores.branco,
+  borderWidth: 1,
+  borderColor: cores.borda,
+  borderRadius: 12,
+  paddingVertical: 12,
+  paddingHorizontal: 14,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+categoriaTexto: {
+  fontSize: 14,
+  fontWeight: '600',
+  color: cores.primaria,
+},
 
   produto: {
-    marginBottom: 30,
-  },
+  backgroundColor: cores.branco,
+  borderWidth: 1,
+  borderColor: cores.borda,
+  borderRadius: 16,
+  padding: 16,
+  marginBottom: 16,
+},
 
   nomeProduto: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
+  fontSize: 18,
+  fontWeight: '700',
+  color: cores.texto,
+  marginBottom: 6,
+},
 
   preco: {
-    fontSize: 18,
-    marginTop: 5,
-    marginBottom: 10,
-  },
+  fontSize: 18,
+  fontWeight: '700',
+  color: cores.primaria,
+  marginTop: 10,
+  marginBottom: 12,
+},
 });
