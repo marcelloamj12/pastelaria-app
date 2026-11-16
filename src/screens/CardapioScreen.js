@@ -10,14 +10,14 @@ import {
 import { useCardapio } from '../hooks/useCardapio';
 import { formatarPreco } from '../services/cardapioService';
 
-export default function CardapioScreen({ navigation }) {
+export default function CardapioScreen({ navigation, route }) {
   const {
     categorias,
     produtos,
     setCategoriaAtiva,
     carregando,
     erro
-  } = useCardapio();
+  } = useCardapio(route.params?.categoriaSlug ?? null);
 
   if (carregando) {
     return (

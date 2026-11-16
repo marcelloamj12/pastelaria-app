@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, Alert, TouchableOpacity, Image, ScrollView } from 'react-native';
 
 import { fazerLogout } from '../services/authService';
-import { listarDestaques, formatarPreco } from '../services/cardapioService';
+import { listarCategorias, listarDestaques, formatarPreco } from '../services/cardapioService';
 import { useAuth } from '../context/AuthContext';
 import { cores } from '../theme/theme';
 
@@ -10,6 +10,7 @@ export default function HomeScreen({ navigation }) {
   const [destaques, setDestaques] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
+  const [categorias, setCategorias] = useState([]);
 
 const {
   sessao,
@@ -34,7 +35,18 @@ const {
       }
     }
 
-    carregarDestaques();
+        carregarDestaques();
+
+    async function carregarCategorias() {
+      try {
+        const dados = await listarCategorias();
+        setCategorias(dados);
+      } catch (error) {
+        console.error('Erro ao carregar categorias:', error.message);
+      }
+    }
+
+    carregarCategorias();
   }, []);
 
 
@@ -90,8 +102,44 @@ async function sairDaConta() {
 
       <Text style={styles.titulo}>Menu Digital</Text>
 
+
+<View style={styles.banner}>
+  <View style={styles.bannerConteudo}>
+    <Text style={styles.bannerTitulo}>
+      Pastéis fritos na hora
+    </Text>
+
+    <Text style={styles.bannerDescricao}>
+      Sabor e qualidade em cada pedido
+    </Text>
+  </View>
+
+  <Text style={styles.bannerEmoji}>🥟</Text>
+</View>
+
+
     {perfil?.role !== 'admin' && (
       <>
+
+<Text style={styles.categoriasTitulo}>Categorias</Text>
+
+<View style={styles.categoriasContainer}>
+  {categorias.map((categoria) => (
+    <TouchableOpacity
+      key={categoria.id}
+      style={styles.categoriaBotao}
+      onPress={() =>
+        navigation.navigate('Cardapio', {
+          categoriaSlug: categoria.slug,
+        })
+      }
+    >
+      <Text style={styles.categoriaTexto}>
+        {categoria.nome}
+      </Text>
+    </TouchableOpacity>
+  ))}
+</View>
 
       <Text style={styles.subtitulo}>Mais pedidos</Text>
 
@@ -185,6 +233,71 @@ async function sairDaConta() {
 }
 
 const styles = StyleSheet.create({
+
+  categoriasTitulo: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: cores.texto,
+    marginBottom: 14,
+  },
+
+  categoriasContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: 26,
+  },
+
+  categoriaBotao: {
+    backgroundColor: cores.branco,
+    borderWidth: 1,
+    borderColor: cores.borda,
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 100,
+  },
+
+  categoriaTexto: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: cores.primaria,
+  },
+
+  banner: {
+    backgroundColor: cores.secundaria,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 120,
+  },
+
+  bannerConteudo: {
+    flex: 1,
+    paddingRight: 12,
+  },
+
+  bannerTitulo: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: cores.texto,
+    marginBottom: 8,
+  },
+
+  bannerDescricao: {
+    fontSize: 13,
+    color: cores.texto,
+    lineHeight: 19,
+  },
+
+  bannerEmoji: {
+    fontSize: 48,
+  },
 
   cabecalho: {
     backgroundColor: cores.primaria,
