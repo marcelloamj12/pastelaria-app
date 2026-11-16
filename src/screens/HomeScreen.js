@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, Alert, TouchableOpacity, } from 'react-native';
+import { View, Text, Button, StyleSheet, Alert, TouchableOpacity, Image, ScrollView } from 'react-native';
 
-import { fazerLogout, } from '../services/authService';
-
+import { fazerLogout } from '../services/authService';
 import { listarDestaques, formatarPreco } from '../services/cardapioService';
-
 import { useAuth } from '../context/AuthContext';
+import { cores } from '../theme/theme';
 
 export default function HomeScreen({ navigation }) {
   const [destaques, setDestaques] = useState([]);
@@ -52,10 +51,18 @@ async function sairDaConta() {
   }
 }
 
-
   return (
-    <View style={styles.container}>
-
+  <ScrollView
+    style={styles.container}
+    contentContainerStyle={styles.conteudo}
+  >
+    <View style={styles.cabecalho}>
+      <Image
+        source={require('../assets/logo.png')}
+        style={styles.logo}
+        resizeMode="contain"
+      />
+    </View>
     {carregandoAuth ? (
   <Text>Carregando sua conta...</Text>
    ) : sessao ? (
@@ -173,21 +180,40 @@ async function sairDaConta() {
     </Text>
   </TouchableOpacity>
 )}  
-   </View>  
+     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+
+  cabecalho: {
+    backgroundColor: cores.primaria,
+    height: 150,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: -20,
+    marginTop: -20,
+    marginBottom: 20,
+  },
+
+conteudo: {
+  flexGrow: 1,
+},
+
+  logo: {
+    width: 250,
+    height: 100,
+  },
 
   espaco: {
   height: 15,
   },
 
   container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-  },
+  flex: 1,
+  backgroundColor: cores.fundo,
+  padding: 20,
+},
 
   titulo: {
     fontSize: 30,
