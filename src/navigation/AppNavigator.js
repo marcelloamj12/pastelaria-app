@@ -22,7 +22,7 @@ export default function AppNavigator() {
       <Stack.Screen
         name="Home"
         component={HomeScreen}
-        options={{ title: 'Início' }}
+        options={{ headerShown: false }}
       />
 
       <Stack.Screen

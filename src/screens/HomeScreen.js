@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, Alert, TouchableOpacity, } from 'react-native';
+import { View, Text, Button, StyleSheet, Alert, TouchableOpacity, Image, ScrollView } from 'react-native';
 
-import { fazerLogout, } from '../services/authService';
-
-import { listarDestaques, formatarPreco } from '../services/cardapioService';
-
+import { fazerLogout } from '../services/authService';
+import { listarCategorias, listarDestaques, formatarPreco } from '../services/cardapioService';
 import { useAuth } from '../context/AuthContext';
+import { cores } from '../theme/theme';
 
 export default function HomeScreen({ navigation }) {
   const [destaques, setDestaques] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
+  const [categorias, setCategorias] = useState([]);
 
 const {
   sessao,
@@ -35,7 +35,18 @@ const {
       }
     }
 
-    carregarDestaques();
+        carregarDestaques();
+
+    async function carregarCategorias() {
+      try {
+        const dados = await listarCategorias();
+        setCategorias(dados);
+      } catch (error) {
+        console.error('Erro ao carregar categorias:', error.message);
+      }
+    }
+
+    carregarCategorias();
   }, []);
 
 
@@ -52,10 +63,18 @@ async function sairDaConta() {
   }
 }
 
-
   return (
-    <View style={styles.container}>
-
+  <ScrollView
+    style={styles.container}
+    contentContainerStyle={styles.conteudo}
+  >
+    <View style={styles.cabecalho}>
+      <Image
+        source={require('../assets/logo.png')}
+        style={styles.logo}
+        resizeMode="contain"
+      />
+    </View>
     {carregandoAuth ? (
   <Text>Carregando sua conta...</Text>
    ) : sessao ? (
@@ -83,8 +102,44 @@ async function sairDaConta() {
 
       <Text style={styles.titulo}>Menu Digital</Text>
 
+
+<View style={styles.banner}>
+  <View style={styles.bannerConteudo}>
+    <Text style={styles.bannerTitulo}>
+      Pastéis fritos na hora
+    </Text>
+
+    <Text style={styles.bannerDescricao}>
+      Sabor e qualidade em cada pedido
+    </Text>
+  </View>
+
+  <Text style={styles.bannerEmoji}>🥟</Text>
+</View>
+
+
     {perfil?.role !== 'admin' && (
       <>
+
+<Text style={styles.categoriasTitulo}>Categorias</Text>
+
+<View style={styles.categoriasContainer}>
+  {categorias.map((categoria) => (
+    <TouchableOpacity
+      key={categoria.id}
+      style={styles.categoriaBotao}
+      onPress={() =>
+        navigation.navigate('Cardapio', {
+          categoriaSlug: categoria.slug,
+        })
+      }
+    >
+      <Text style={styles.categoriaTexto}>
+        {categoria.nome}
+      </Text>
+    </TouchableOpacity>
+  ))}
+</View>
 
       <Text style={styles.subtitulo}>Mais pedidos</Text>
 
@@ -113,24 +168,32 @@ async function sairDaConta() {
             {formatarPreco(produto.preco)}
           </Text>
 
-          <Button
-            title="Ver Produto"
-            onPress={() =>
-              navigation.navigate('Produto', {
-                produto: produto
-              })
-            }
-          />
+          <TouchableOpacity
+  style={styles.botaoProduto}
+  onPress={() =>
+    navigation.navigate('Produto', {
+      produto: produto
+    })
+  }
+>
+  <Text style={styles.textoBotaoProduto}>
+    Ver Produto
+  </Text>
+</TouchableOpacity>
         </View>
       ))}
       </>
 )}
 
 
-      <Button
-        title="Ver Cardápio"
-        onPress={() => navigation.navigate('Cardapio')}
-      />
+      <TouchableOpacity
+  style={styles.botaoCardapio}
+  onPress={() => navigation.navigate('Cardapio')}
+>
+  <Text style={styles.textoBotaoCardapio}>
+    Ver Cardápio Completo
+  </Text>
+</TouchableOpacity>
 
       <View style={styles.espaco}/>
 
@@ -173,21 +236,135 @@ async function sairDaConta() {
     </Text>
   </TouchableOpacity>
 )}  
-   </View>  
+     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+
+botaoCardapio: {
+  backgroundColor: cores.primaria,
+  paddingVertical: 15,
+  paddingHorizontal: 20,
+  borderRadius: 12,
+  alignItems: 'center',
+  marginTop: 10,
+},
+
+textoBotaoCardapio: {
+  color: cores.branco,
+  fontSize: 16,
+  fontWeight: '700',
+},
+
+botaoProduto: {
+  backgroundColor: cores.primaria,
+  paddingVertical: 12,
+  paddingHorizontal: 16,
+  borderRadius: 10,
+  alignItems: 'center',
+  marginTop: 12,
+},
+
+textoBotaoProduto: {
+  color: cores.branco,
+  fontSize: 15,
+  fontWeight: '600',
+},
+
+  categoriasTitulo: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: cores.texto,
+    marginBottom: 14,
+  },
+
+  categoriasContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: 26,
+  },
+
+  categoriaBotao: {
+    backgroundColor: cores.branco,
+    borderWidth: 1,
+    borderColor: cores.borda,
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 100,
+  },
+
+  categoriaTexto: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: cores.primaria,
+  },
+
+  banner: {
+    backgroundColor: cores.secundaria,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 120,
+  },
+
+  bannerConteudo: {
+    flex: 1,
+    paddingRight: 12,
+  },
+
+  bannerTitulo: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: cores.texto,
+    marginBottom: 8,
+  },
+
+  bannerDescricao: {
+    fontSize: 13,
+    color: cores.texto,
+    lineHeight: 19,
+  },
+
+  bannerEmoji: {
+    fontSize: 48,
+  },
+
+  cabecalho: {
+    backgroundColor: cores.primaria,
+    height: 150,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: -20,
+    marginTop: -20,
+    marginBottom: 20,
+  },
+
+conteudo: {
+  flexGrow: 1,
+},
+
+  logo: {
+    width: 250,
+    height: 100,
+  },
 
   espaco: {
   height: 15,
   },
 
   container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-  },
+  flex: 1,
+  backgroundColor: cores.fundo,
+  padding: 20,
+},
 
   titulo: {
     fontSize: 30,
@@ -201,8 +378,13 @@ const styles = StyleSheet.create({
   },
 
   produto: {
-    marginBottom: 20,
-  },
+  backgroundColor: cores.branco,
+  borderWidth: 1,
+  borderColor: cores.borda,
+  borderRadius: 16,
+  padding: 16,
+  marginBottom: 16,
+},
 
   nomeProduto: {
     fontSize: 18,

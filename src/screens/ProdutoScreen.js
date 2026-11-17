@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, Text, Button, StyleSheet, TouchableOpacity } from 'react-native';
 
 import { buscarProduto, formatarPreco } from '../services/cardapioService';
+import { cores } from '../theme/theme';
 
 export default function ProdutoScreen({ route, navigation }) {
   const { produto: produtoInicial } = route.params;
@@ -63,44 +64,88 @@ export default function ProdutoScreen({ route, navigation }) {
         {formatarPreco(produto.preco)}
       </Text>
 
-      <Button
-        title="Adicionar ao Carrinho"
-        onPress={() =>
-          navigation.navigate('Carrinho', {
-            produto: produto
-          })
-        }
-      />
+      <TouchableOpacity
+  style={styles.botaoCarrinho}
+  onPress={() =>
+    navigation.navigate('Carrinho', {
+      produto: produto
+    })
+  }
+>
+  <Text style={styles.textoBotaoCarrinho}>
+    Adicionar ao Carrinho
+  </Text>
+</TouchableOpacity>
 
-      <Button
-        title="Voltar"
-        onPress={() => navigation.goBack()}
-      />
+      <TouchableOpacity
+  style={styles.botaoVoltar}
+  onPress={() => navigation.goBack()}
+>
+  <Text style={styles.textoBotaoVoltar}>
+    Voltar
+  </Text>
+</TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+
   container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-  },
+  flex: 1,
+  justifyContent: 'flex-start',
+  backgroundColor: cores.fundo,
+  padding: 20,
+},
+
+botaoCarrinho: {
+  backgroundColor: cores.primaria,
+  paddingVertical: 16,
+  paddingHorizontal: 20,
+  borderRadius: 12,
+  alignItems: 'center',
+  marginBottom: 12,
+},
+
+textoBotaoCarrinho: {
+  color: cores.branco,
+  fontSize: 16,
+  fontWeight: '700',
+},
+
+botaoVoltar: {
+  backgroundColor: cores.branco,
+  borderWidth: 1,
+  borderColor: cores.primaria,
+  borderRadius: 12,
+  paddingVertical: 14,
+  alignItems: 'center',
+},
+
+textoBotaoVoltar: {
+  color: cores.primaria,
+  fontSize: 15,
+  fontWeight: '600',
+},
 
   titulo: {
-    fontSize: 30,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
+  fontSize: 26,
+  fontWeight: '700',
+  color: cores.texto,
+  marginBottom: 12,
+},
 
   descricao: {
-    fontSize: 18,
-    marginBottom: 10,
-  },
+  fontSize: 16,
+  color: cores.textoSecundario,
+  lineHeight: 24,
+  marginBottom: 20,
+},
 
   preco: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
+  fontSize: 26,
+  fontWeight: '700',
+  color: cores.primaria,
+  marginBottom: 24,
+},
 });

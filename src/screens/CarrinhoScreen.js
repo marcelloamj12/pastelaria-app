@@ -3,8 +3,10 @@ import {
   View,
   Text,
   Button,
-  StyleSheet
+  StyleSheet,
+  TouchableOpacity
 } from 'react-native';
+import { cores } from '../theme/theme';
 
 export default function CarrinhoScreen({ route, navigation }) {
 
@@ -53,19 +55,23 @@ export default function CarrinhoScreen({ route, navigation }) {
 
           <View style={styles.quantidadeContainer}>
 
-            <Button
-              title="-"
-              onPress={diminuirQuantidade}
-            />
+            <TouchableOpacity
+  style={styles.botaoQuantidade}
+  onPress={diminuirQuantidade}
+>
+  <Text style={styles.textoBotaoQuantidade}>−</Text>
+</TouchableOpacity>
 
-            <Text style={styles.quantidade}>
-              {quantidade}
-            </Text>
+<Text style={styles.quantidade}>
+  {quantidade}
+</Text>
 
-            <Button
-              title="+"
-              onPress={aumentarQuantidade}
-            />
+<TouchableOpacity
+  style={styles.botaoQuantidade}
+  onPress={aumentarQuantidade}
+>
+  <Text style={styles.textoBotaoQuantidade}>+</Text>
+</TouchableOpacity>
 
           </View>
 
@@ -73,16 +79,20 @@ export default function CarrinhoScreen({ route, navigation }) {
             Total: R$ {total.toFixed(2)}
           </Text>
 
-          <Button
-            title="Finalizar Pedido"
-            onPress={() =>
-              navigation.navigate('Finalizacao', {
-                produto: produto,
-                quantidade: quantidade,
-                total: total
-              })
-            }
-          />
+          <TouchableOpacity
+  style={styles.botaoFinalizar}
+  onPress={() =>
+    navigation.navigate('Finalizacao', {
+      produto: produto,
+      quantidade: quantidade,
+      total: total
+    })
+  }
+>
+  <Text style={styles.textoBotaoFinalizar}>
+    Finalizar Pedido
+  </Text>
+</TouchableOpacity>
 
         </>
       ) : (
@@ -90,11 +100,15 @@ export default function CarrinhoScreen({ route, navigation }) {
       )}
 
       <View style={styles.espaco}>
-        <Button
-          title="Voltar"
-          onPress={() => navigation.goBack()}
-        />
-      </View>
+  <TouchableOpacity
+    style={styles.botaoVoltar}
+    onPress={() => navigation.goBack()}
+  >
+    <Text style={styles.textoBotaoVoltar}>
+      Voltar
+    </Text>
+  </TouchableOpacity>
+</View>
 
     </View>
   );
@@ -103,27 +117,77 @@ export default function CarrinhoScreen({ route, navigation }) {
 const styles = StyleSheet.create({
 
   container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-  },
+  flex: 1,
+  justifyContent: 'flex-start',
+  backgroundColor: cores.fundo,
+  padding: 20,
+},
+
+botaoQuantidade: {
+  backgroundColor: cores.primaria,
+  width: 40,
+  height: 40,
+  borderRadius: 10,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+textoBotaoQuantidade: {
+  color: cores.branco,
+  fontSize: 22,
+  fontWeight: '700',
+},
+
+botaoFinalizar: {
+  backgroundColor: cores.primaria,
+  paddingVertical: 16,
+  paddingHorizontal: 20,
+  borderRadius: 12,
+  alignItems: 'center',
+  marginBottom: 12,
+},
+
+textoBotaoFinalizar: {
+  color: cores.branco,
+  fontSize: 16,
+  fontWeight: '700',
+},
+
+botaoVoltar: {
+  backgroundColor: cores.branco,
+  borderWidth: 1,
+  borderColor: cores.primaria,
+  borderRadius: 12,
+  paddingVertical: 14,
+  alignItems: 'center',
+},
+
+textoBotaoVoltar: {
+  color: cores.primaria,
+  fontSize: 15,
+  fontWeight: '600',
+},
 
   titulo: {
-    fontSize: 30,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
+  fontSize: 28,
+  fontWeight: '700',
+  color: cores.texto,
+  marginBottom: 24,
+},
 
   nome: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
+  fontSize: 20,
+  fontWeight: '700',
+  color: cores.texto,
+  marginBottom: 8,
+},
 
   preco: {
-    fontSize: 18,
-    marginTop: 10,
-  },
+  fontSize: 18,
+  color: cores.primaria,
+  fontWeight: '600',
+  marginTop: 12,
+},
 
   subtitulo: {
     fontSize: 18,
@@ -144,10 +208,11 @@ const styles = StyleSheet.create({
   },
 
   total: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
+  fontSize: 24,
+  fontWeight: '700',
+  color: cores.primaria,
+  marginBottom: 24,
+},
 
   espaco: {
     marginTop: 10,

@@ -5,10 +5,13 @@ import {
   Button,
   TextInput,
   StyleSheet,
-  Alert
+  Alert,
+  ScrollView,
+  TouchableOpacity
 } from 'react-native';
 
 import { criarPedido } from '../services/pedidoService';
+import { cores } from '../theme/theme';
 
 export default function FinalizacaoScreen({ route, navigation }) {
 
@@ -62,7 +65,11 @@ export default function FinalizacaoScreen({ route, navigation }) {
 }
 
   return (
-    <View style={styles.container}>
+  <ScrollView
+    style={styles.container}
+    contentContainerStyle={styles.conteudo}
+    keyboardShouldPersistTaps="handled"
+  >
 
       <Text style={styles.titulo}>
         Finalizar Pedido
@@ -88,6 +95,7 @@ export default function FinalizacaoScreen({ route, navigation }) {
 
         <Text>Nome:</Text>
           <TextInput
+	    style={styles.campo}
             placeholder="Digite seu nome"
             value={nome}
             onChangeText={setNome}
@@ -95,6 +103,7 @@ export default function FinalizacaoScreen({ route, navigation }) {
 
         <Text>Telefone:</Text>
           <TextInput
+	    style={styles.campo}
             placeholder="Digite seu telefone"
             value={telefone}
             onChangeText={setTelefone}
@@ -103,20 +112,47 @@ export default function FinalizacaoScreen({ route, navigation }) {
 
           <Text>Tipo de pedido:</Text>
 
-          <Button
-            title={tipo === 'retirada' ? 'Retirada ✓' : 'Retirada'}
-            onPress={() => setTipo('retirada')}
-          />
+          <View style={styles.opcoesContainer}>
+  <TouchableOpacity
+    style={[
+      styles.botaoOpcao,
+      tipo === 'retirada' && styles.botaoOpcaoAtivo
+    ]}
+    onPress={() => setTipo('retirada')}
+  >
+    <Text
+      style={[
+        styles.textoOpcao,
+        tipo === 'retirada' && styles.textoOpcaoAtivo
+      ]}
+    >
+      Retirada
+    </Text>
+  </TouchableOpacity>
 
-          <Button
-          title={tipo === 'entrega' ? 'Entrega ✓' : 'Entrega'}
-          onPress={() => setTipo('entrega')}
-          />
+  <TouchableOpacity
+    style={[
+      styles.botaoOpcao,
+      tipo === 'entrega' && styles.botaoOpcaoAtivo
+    ]}
+    onPress={() => setTipo('entrega')}
+  >
+    <Text
+      style={[
+        styles.textoOpcao,
+        tipo === 'entrega' && styles.textoOpcaoAtivo
+      ]}
+    >
+      Entrega
+    </Text>
+  </TouchableOpacity>
+</View>
 
           {tipo === 'entrega' && (
         <>
           <Text>Endereço:</Text>
           <TextInput
+	  style={styles.campo}
           placeholder="Digite seu endereço"
           value={endereco}
           onChangeText={setEndereco}
@@ -126,29 +162,37 @@ export default function FinalizacaoScreen({ route, navigation }) {
 
         <Text>Forma de pagamento:</Text>
 
-          <Button
-            title={pagamento === 'pix' ? 'Pix ✓' : 'Pix'}
-            onPress={() => setPagamento('pix')}
-          />
-
-          <Button
-            title={pagamento === 'dinheiro' ? 'Dinheiro ✓' : 'Dinheiro'}
-            onPress={() => setPagamento('dinheiro')}
-          />
-
-          <Button
-            title={pagamento === 'cartao_credito' ? 'Cartão de crédito ✓' : 'Cartão de crédito'}
-            onPress={() => setPagamento('cartao_credito')}
-          />
-
-          <Button
-            title={pagamento === 'cartao_debito' ? 'Cartão de débito ✓' : 'Cartão de débito'}
-            onPress={() => setPagamento('cartao_debito')}
-          />
+          <View style={styles.pagamentosContainer}>
+  {[
+    { valor: 'pix', nome: 'Pix' },
+    { valor: 'dinheiro', nome: 'Dinheiro' },
+    { valor: 'cartao_credito', nome: 'Cartão de crédito' },
+    { valor: 'cartao_debito', nome: 'Cartão de débito' },
+  ].map((opcao) => (
+    <TouchableOpacity
+      key={opcao.valor}
+      style={[
+        styles.botaoPagamento,
+        pagamento === opcao.valor && styles.botaoOpcaoAtivo,
+      ]}
+      onPress={() => setPagamento(opcao.valor)}
+    >
+      <Text
+        style={[
+          styles.textoOpcao,
+          pagamento === opcao.valor && styles.textoOpcaoAtivo,
+        ]}
+      >
+        {opcao.nome}
+      </Text>
+    </TouchableOpacity>
+  ))}
+</View>
 
 
           <Text>Observações (opcional):</Text>
             <TextInput
+	      style={styles.campo}
               placeholder="Alguma observação sobre o pedido?"
               value={observacoes}
               onChangeText={setObservacoes}
@@ -156,11 +200,18 @@ export default function FinalizacaoScreen({ route, navigation }) {
             />
 
 
-          <Button
-            title={carregando ? 'Enviando...' : 'Confirmar Pedido'}
-            onPress={confirmarPedido}
-            disabled={carregando}
-          />
+         <TouchableOpacity
+  style={[
+    styles.botaoConfirmar,
+    carregando && styles.botaoDesabilitado
+  ]}
+  onPress={confirmarPedido}
+  disabled={carregando}
+>
+  <Text style={styles.textoBotaoConfirmar}>
+    {carregando ? 'Enviando...' : 'Confirmar Pedido'}
+  </Text>
+</TouchableOpacity>
 
         </>
       ) : (
@@ -168,23 +219,134 @@ export default function FinalizacaoScreen({ route, navigation }) {
       )}
 
       <View style={styles.espaco}>
-        <Button
-          title="Voltar"
-          onPress={() => navigation.goBack()}
-        />
-      </View>
+  <TouchableOpacity
+    style={styles.botaoVoltar}
+    onPress={() => navigation.goBack()}
+  >
+    <Text style={styles.textoBotaoVoltar}>
+      Voltar
+    </Text>
+  </TouchableOpacity>
+</View>
 
-    </View>
+        </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
 
+botaoVoltar: {
+  backgroundColor: cores.branco,
+  borderWidth: 1,
+  borderColor: cores.primaria,
+  borderRadius: 12,
+  paddingVertical: 14,
+  alignItems: 'center',
+  marginBottom: 20,
+},
+
+textoBotaoVoltar: {
+  color: cores.primaria,
+  fontSize: 15,
+  fontWeight: '600',
+},
+
+botaoConfirmar: {
+  backgroundColor: cores.primaria,
+  paddingVertical: 16,
+  paddingHorizontal: 20,
+  borderRadius: 12,
+  alignItems: 'center',
+  marginTop: 8,
+  marginBottom: 12,
+},
+
+textoBotaoConfirmar: {
+  color: cores.branco,
+  fontSize: 16,
+  fontWeight: '700',
+},
+
+botaoDesabilitado: {
+  opacity: 0.6,
+},
+
+pagamentosContainer: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  gap: 12,
+  marginTop: 8,
+  marginBottom: 20,
+},
+
+botaoPagamento: {
+  width: '48%',
+  backgroundColor: cores.branco,
+  borderWidth: 1,
+  borderColor: cores.borda,
+  borderRadius: 12,
+  paddingVertical: 14,
+  paddingHorizontal: 8,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+opcoesContainer: {
+  flexDirection: 'row',
+  gap: 12,
+  marginTop: 8,
+  marginBottom: 20,
+},
+
+botaoOpcao: {
+  flex: 1,
+  backgroundColor: cores.branco,
+  borderWidth: 1,
+  borderColor: cores.borda,
+  borderRadius: 12,
+  paddingVertical: 14,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+botaoOpcaoAtivo: {
+  backgroundColor: cores.primaria,
+  borderColor: cores.primaria,
+},
+
+textoOpcao: {
+  fontSize: 15,
+  fontWeight: '600',
+  color: cores.primaria,
+},
+
+textoOpcaoAtivo: {
+  color: cores.branco,
+},
+
   container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-  },
+  flex: 1,
+  backgroundColor: '#FFFDF8',
+},
+
+campo: {
+  backgroundColor: cores.branco,
+  borderWidth: 1,
+  borderColor: cores.borda,
+  borderRadius: 12,
+  paddingHorizontal: 14,
+  paddingVertical: 12,
+  fontSize: 16,
+  color: cores.texto,
+  marginTop: 6,
+  marginBottom: 16,
+},
+
+conteudo: {
+  flexGrow: 1,
+  padding: 20,
+  paddingBottom: 40,
+},
 
   titulo: {
     fontSize: 30,
