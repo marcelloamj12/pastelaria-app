@@ -74,10 +74,11 @@ $$;
 
 -- Remove a permissão padrão de execução pública
 REVOKE ALL ON FUNCTION public.meus_pedidos(text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.meus_pedidos(text) FROM anon;
 
 -- Permite que o aplicativo chame a função
 GRANT EXECUTE ON FUNCTION public.meus_pedidos(text)
-TO anon, authenticated;
+TO authenticated;
 
 
 ---------------------------------------------------
@@ -165,6 +166,7 @@ $$;
 
 REVOKE ALL ON FUNCTION public.buscar_meu_pedido(uuid, text)
 FROM PUBLIC;
+
 
 GRANT EXECUTE ON FUNCTION public.buscar_meu_pedido(uuid, text)
 TO anon, authenticated;
