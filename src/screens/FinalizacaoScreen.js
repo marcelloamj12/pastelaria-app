@@ -14,6 +14,7 @@ import {
 import { useCarrinho } from '../context/CarrinhoContext';
 import { criarPedido } from '../services/pedidoService';
 import { cores } from '../theme/theme';
+import { salvarPedidoAcompanhamento } from '../services/acompanhamentoPedidoStorage'; //place holder
 
 export default function FinalizacaoScreen({ navigation }) {
   const { itens, total, limparCarrinho } = useCarrinho();
@@ -85,6 +86,12 @@ export default function FinalizacaoScreen({ navigation }) {
       if (!pedido?.pedido_id) {
         throw new Error('O banco não retornou o identificador do pedido.');
       }
+
+      // place holder
+      await salvarPedidoAcompanhamento(
+  pedido.pedido_id,
+  telefone
+);
 
       limparCarrinho();
 

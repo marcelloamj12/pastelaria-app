@@ -12,6 +12,7 @@ import AdminScreen from '../screens/AdminScreen';
 import ClientesAdminScreen from '../screens/ClientesAdminScreen';
 import PedidosAdminScreen from '../screens/PedidosAdminScreen';
 import ItensPedidosAdminScreen from '../screens/ItensPedidosAdminScreen';
+import AcompanharPedidoScreen from '../screens/AcompanharPedidoScreen'; //place holder
 
 const Stack = createNativeStackNavigator();
 
@@ -57,7 +58,15 @@ export default function AppNavigator() {
           headerBackVisible: false
         }}
       />
- 
+
+
+      <Stack.Screen
+  name="AcompanharPedido"
+  component={AcompanharPedidoScreen}
+  options={{
+    title: 'Acompanhar Pedido'
+  }}
+/>
 
       <Stack.Screen
         name="Login"

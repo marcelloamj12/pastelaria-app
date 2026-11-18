@@ -196,6 +196,16 @@ async function sairDaConta() {
 </TouchableOpacity>
 
       <View style={styles.espaco}/>
+a
+
+<TouchableOpacity
+  style={styles.botaoAcompanhar}
+  onPress={() => navigation.navigate('AcompanharPedido')}
+>
+  <Text style={styles.textoBotaoAcompanhar}>
+    Acompanhar Pedido
+  </Text>
+</TouchableOpacity>
 
       {!carregandoAuth && sessao && perfil?.role === 'admin' && (
 
@@ -427,6 +437,24 @@ textoBotaoAdmin: {
   color: '#f5f3f3',
   fontSize: 16,
   fontWeight: 'bold',
+},
+
+// place holder
+botaoAcompanhar: {
+  backgroundColor: cores.branco,
+  borderWidth: 1,
+  borderColor: cores.primaria,
+  paddingVertical: 15,
+  paddingHorizontal: 20,
+  borderRadius: 12,
+  alignItems: 'center',
+  marginTop: 12,
+},
+
+textoBotaoAcompanhar: {
+  color: cores.primaria,
+  fontSize: 16,
+  fontWeight: '700',
 },
 
 });
