@@ -43,13 +43,16 @@ export default function ProdutoScreen({ route, navigation }) {
   }, [produtoInicial.id]);
 
   function adicionarAoCarrinho() {
-    if (!produto) {
-      return;
-    }
-
-    adicionarProduto(produto);
-    navigation.navigate('Carrinho');
+  if (!produto) {
+    return;
   }
+
+  adicionarProduto(produto);
+
+  navigation.navigate('MainTabs', {
+    screen: 'Carrinho',
+  });
+}
 
   if (carregando) {
     return (

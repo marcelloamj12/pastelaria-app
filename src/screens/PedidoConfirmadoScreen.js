@@ -15,8 +15,10 @@ export default function PedidoConfirmadoScreen({ route, navigation }) {
 const status = route.params?.status;
 
   function voltarInicio() {
-    navigation.popToTop();
-  }
+  navigation.navigate('MainTabs', {
+    screen: 'Home',
+  });
+}
 
   return (
     <View style={styles.container}>
@@ -41,7 +43,7 @@ const status = route.params?.status;
 
       {total !== undefined && (
         <Text style={styles.total}>
-          Total do pedido: R$ {total.toFixed(2)}
+          Total do pedido: R$ {Number(total).toFixed(2).replace('.', ',')}
         </Text>
       )}
 
