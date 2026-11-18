@@ -47,6 +47,7 @@ export default function AcompanharPedidoScreen({ navigation }) {
     const { pedidoId, telefone } = dadosAcompanhamento;
 
     const resultado = await buscarPedido(pedidoId, telefone);
+    if (!ativo) return;
 
     setPedido(resultado);
     setAtualizadoEm(new Date()); // place holder
@@ -60,8 +61,9 @@ export default function AcompanharPedidoScreen({ navigation }) {
 
   } catch (erro) {
     console.error('Erro ao consultar pedido:', erro);
+    if (ativo) {
     setErro('Não foi possível atualizar o pedido. Tentaremos novamente.');
-  } finally {
+  } } finally {
     if (ativo) {
       setCarregando(false);
 
