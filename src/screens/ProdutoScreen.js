@@ -1,13 +1,9 @@
-
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, TouchableOpacity } from 'react-native';
 
 import { buscarProduto, formatarPreco } from '../services/cardapioService';
-<<<<<<< HEAD
 import { cores } from '../theme/theme';
-=======
 import { useCarrinho } from '../context/CarrinhoContext';
->>>>>>> 439331e (feat: implementar carrinho com multiplos produtos)
 
 export default function ProdutoScreen({ route, navigation }) {
   const { produto: produtoInicial } = route.params;
@@ -92,25 +88,14 @@ export default function ProdutoScreen({ route, navigation }) {
         {formatarPreco(produto.preco)}
       </Text>
 
-<<<<<<< HEAD
       <TouchableOpacity
-  style={styles.botaoCarrinho}
-  onPress={() =>
-    navigation.navigate('Carrinho', {
-      produto: produto
-    })
-  }
->
-  <Text style={styles.textoBotaoCarrinho}>
-    Adicionar ao Carrinho
-  </Text>
-</TouchableOpacity>
-=======
-      <Button
-        title="Adicionar ao Carrinho"
+        style={styles.botaoCarrinho}
         onPress={adicionarAoCarrinho}
-      />
->>>>>>> 439331e (feat: implementar carrinho com multiplos produtos)
+      >
+        <Text style={styles.textoBotaoCarrinho}>
+          Adicionar ao Carrinho
+        </Text>
+      </TouchableOpacity>
 
       <TouchableOpacity
   style={styles.botaoVoltar}
