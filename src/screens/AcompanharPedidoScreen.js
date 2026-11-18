@@ -29,13 +29,14 @@ export default function AcompanharPedidoScreen({ navigation }) {
     let temporizador = null;
     let dadosAcompanhamento = null;
     let acompanhamentoEncerrado = false;
+    let semPedidoEncontrado = false;
     
 
     async function consultarPedido() {
   try {
     setErro(null);
 
-    const dadosAcompanhamento = await buscarPedidoAcompanhamento();
+    dadosAcompanhamento = await buscarPedidoAcompanhamento();
 
     if (!dadosAcompanhamento) {
       semPedidoEncontrado = true;
@@ -48,8 +49,7 @@ export default function AcompanharPedidoScreen({ navigation }) {
     const resultado = await buscarPedido(pedidoId, telefone);
 
     setPedido(resultado);
-    setStatusAtual(resultado?.status || null);
-    setDataAtualizacao(new Date());
+    setAtualizadoEm(new Date()); // place holder
 
     if (
       resultado?.status === 'entregue' ||
