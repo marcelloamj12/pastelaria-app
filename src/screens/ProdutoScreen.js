@@ -1,9 +1,19 @@
+
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  Button,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  ScrollView
+} from 'react-native';
 
 import { buscarProduto, formatarPreco } from '../services/cardapioService';
 import { cores } from '../theme/theme';
 import { useCarrinho } from '../context/CarrinhoContext';
+import { imagensProdutos } from '../assets/imageMappings';
 
 export default function ProdutoScreen({ route, navigation }) {
   const { produto: produtoInicial } = route.params;
@@ -66,6 +76,7 @@ export default function ProdutoScreen({ route, navigation }) {
     return (
       <View style={styles.container}>
         <Text>Produto não encontrado.</Text>
+
         <Button
           title="Voltar"
           onPress={() => navigation.goBack()}
@@ -75,7 +86,18 @@ export default function ProdutoScreen({ route, navigation }) {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.conteudo}
+    >
+      {imagensProdutos[produto.nome] && (
+        <Image
+          source={imagensProdutos[produto.nome]}
+          style={styles.produtoImagem}
+          resizeMode="cover"
+        />
+      )}
+
       <Text style={styles.titulo}>
         {produto.nome}
       </Text>
@@ -98,74 +120,84 @@ export default function ProdutoScreen({ route, navigation }) {
       </TouchableOpacity>
 
       <TouchableOpacity
-  style={styles.botaoVoltar}
-  onPress={() => navigation.goBack()}
->
-  <Text style={styles.textoBotaoVoltar}>
-    Voltar
-  </Text>
-</TouchableOpacity>
-    </View>
+        style={styles.botaoVoltar}
+        onPress={() => navigation.goBack()}
+      >
+        <Text style={styles.textoBotaoVoltar}>
+          Voltar
+        </Text>
+      </TouchableOpacity>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
-  flex: 1,
-  justifyContent: 'flex-start',
-  backgroundColor: cores.fundo,
-  padding: 20,
-},
+    flex: 1,
+    backgroundColor: cores.fundo,
+  },
 
-botaoCarrinho: {
-  backgroundColor: cores.primaria,
-  paddingVertical: 16,
-  paddingHorizontal: 20,
-  borderRadius: 12,
-  alignItems: 'center',
-  marginBottom: 12,
-},
+  conteudo: {
+    padding: 20,
+    paddingBottom: 40,
+  },
 
-textoBotaoCarrinho: {
-  color: cores.branco,
-  fontSize: 16,
-  fontWeight: '700',
-},
-
-botaoVoltar: {
-  backgroundColor: cores.branco,
-  borderWidth: 1,
-  borderColor: cores.primaria,
-  borderRadius: 12,
-  paddingVertical: 14,
-  alignItems: 'center',
-},
-
-textoBotaoVoltar: {
-  color: cores.primaria,
-  fontSize: 15,
-  fontWeight: '600',
-},
+  produtoImagem: {
+    width: '100%',
+    height: 250,
+    borderRadius: 16,
+    marginBottom: 20,
+    backgroundColor: cores.cinzaClaro,
+  },
 
   titulo: {
-  fontSize: 26,
-  fontWeight: '700',
-  color: cores.texto,
-  marginBottom: 12,
-},
+    fontSize: 26,
+    fontWeight: '700',
+    color: cores.texto,
+    marginBottom: 12,
+  },
 
   descricao: {
-  fontSize: 16,
-  color: cores.textoSecundario,
-  lineHeight: 24,
-  marginBottom: 20,
-},
+    fontSize: 16,
+    color: cores.textoSecundario,
+    lineHeight: 24,
+    marginBottom: 20,
+  },
 
   preco: {
-  fontSize: 26,
-  fontWeight: '700',
-  color: cores.primaria,
-  marginBottom: 24,
-},
+    fontSize: 26,
+    fontWeight: '700',
+    color: cores.primaria,
+    marginBottom: 24,
+  },
+
+  botaoCarrinho: {
+    backgroundColor: cores.primaria,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+
+  textoBotaoCarrinho: {
+    color: cores.branco,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+
+  botaoVoltar: {
+    backgroundColor: cores.branco,
+    borderWidth: 1,
+    borderColor: cores.primaria,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+
+  textoBotaoVoltar: {
+    color: cores.primaria,
+    fontSize: 15,
+    fontWeight: '600',
+  },
 });

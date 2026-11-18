@@ -5,6 +5,7 @@ import { fazerLogout } from '../services/authService';
 import { listarCategorias, listarDestaques, formatarPreco } from '../services/cardapioService';
 import { useAuth } from '../context/AuthContext';
 import { cores } from '../theme/theme';
+import { bannerHome, imagensCategorias, imagensProdutos } from '../assets/imageMappings';
 
 export default function HomeScreen({ navigation }) {
   const [destaques, setDestaques] = useState([]);
@@ -114,7 +115,11 @@ async function sairDaConta() {
     </Text>
   </View>
 
-  <Text style={styles.bannerEmoji}>🥟</Text>
+  <Image
+  source={bannerHome}
+  style={styles.bannerImagem}
+  resizeMode="contain"
+/>
 </View>
 
 
@@ -127,13 +132,19 @@ async function sairDaConta() {
   {categorias.map((categoria) => (
     <TouchableOpacity
       key={categoria.id}
-      style={styles.categoriaBotao}
+      style={styles.categoriaCard}
       onPress={() =>
         navigation.navigate('Cardapio', {
           categoriaSlug: categoria.slug,
         })
       }
     >
+      <Image
+        source={imagensCategorias[categoria.slug]}
+        style={styles.categoriaImagem}
+        resizeMode="cover"
+      />
+
       <Text style={styles.categoriaTexto}>
         {categoria.nome}
       </Text>
@@ -152,36 +163,44 @@ async function sairDaConta() {
       )}
 
       {!carregando && !erro && destaques.map((produto) => (
-        <View
-          key={produto.id}
-          style={styles.produto}
-        >
-          <Text style={styles.nomeProduto}>
-            {produto.nome}
-          </Text>
+  <View
+    key={produto.id}
+    style={styles.produto}
+  >
+    {imagensProdutos[produto.nome] && (
+      <Image
+        source={imagensProdutos[produto.nome]}
+        style={styles.produtoImagem}
+        resizeMode="cover"
+      />
+    )}
 
-          <Text>
-            {produto.descricao}
-          </Text>
+    <Text style={styles.nomeProduto}>
+      {produto.nome}
+    </Text>
 
-          <Text style={styles.preco}>
-            {formatarPreco(produto.preco)}
-          </Text>
+    <Text>
+      {produto.descricao}
+    </Text>
 
-          <TouchableOpacity
-  style={styles.botaoProduto}
-  onPress={() =>
-    navigation.navigate('Produto', {
-      produto: produto
-    })
-  }
->
-  <Text style={styles.textoBotaoProduto}>
-    Ver Produto
-  </Text>
-</TouchableOpacity>
-        </View>
-      ))}
+    <Text style={styles.preco}>
+      {formatarPreco(produto.preco)}
+    </Text>
+
+    <TouchableOpacity
+      style={styles.botaoProduto}
+      onPress={() =>
+        navigation.navigate('Produto', {
+          produto: produto
+        })
+      }
+    >
+      <Text style={styles.textoBotaoProduto}>
+        Ver Produto
+      </Text>
+        </TouchableOpacity>
+  </View>
+))}
       </>
 )}
 
@@ -242,6 +261,37 @@ async function sairDaConta() {
 
 const styles = StyleSheet.create({
 
+bannerImagem: {
+  width: 160,
+  height: 100,
+},
+
+categoriaCard: {
+  backgroundColor: cores.branco,
+  borderWidth: 1,
+  borderColor: cores.borda,
+  borderRadius: 12,
+  padding: 10,
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 100,
+},
+
+categoriaImagem: {
+  width: 70,
+  height: 70,
+  borderRadius: 10,
+  marginBottom: 8,
+},
+
+produtoImagem: {
+  width: '100%',
+  height: 160,
+  borderRadius: 12,
+  marginBottom: 12,
+  backgroundColor: cores.cinzaClaro,
+},
+
 botaoCardapio: {
   backgroundColor: cores.primaria,
   paddingVertical: 15,
@@ -286,18 +336,6 @@ textoBotaoProduto: {
     marginBottom: 26,
   },
 
-  categoriaBotao: {
-    backgroundColor: cores.branco,
-    borderWidth: 1,
-    borderColor: cores.borda,
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: 100,
-  },
-
   categoriaTexto: {
     fontSize: 14,
     fontWeight: '600',
@@ -333,9 +371,10 @@ textoBotaoProduto: {
     lineHeight: 19,
   },
 
-  bannerEmoji: {
-    fontSize: 48,
-  },
+  bannerImagem: {
+  width: 130,
+  height: 100,
+},
 
   cabecalho: {
     backgroundColor: cores.primaria,
