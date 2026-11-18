@@ -37,6 +37,7 @@ export default function AcompanharPedidoScreen({ navigation }) {
     setErro(null);
 
     dadosAcompanhamento = await buscarPedidoAcompanhamento();
+    if (!ativo) return;
 
     if (!dadosAcompanhamento) {
       semPedidoEncontrado = true;
@@ -63,7 +64,8 @@ export default function AcompanharPedidoScreen({ navigation }) {
     console.error('Erro ao consultar pedido:', erro);
     if (ativo) {
     setErro('Não foi possível atualizar o pedido. Tentaremos novamente.');
-  } } finally {
+  } 
+} finally {
     if (ativo) {
       setCarregando(false);
 
