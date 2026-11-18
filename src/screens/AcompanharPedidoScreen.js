@@ -29,58 +29,49 @@ export default function AcompanharPedidoScreen({ navigation }) {
     let temporizador = null;
     let dadosAcompanhamento = null;
     let acompanhamentoEncerrado = false;
+    
 
     async function consultarPedido() {
-      try {
-        // Recupera os dados salvos apenas na primeira consulta
-        if (!dadosAcompanhamento) {
-          dadosAcompanhamento = await buscarPedidoAcompanhamento();
+  try {
+    setErro(null);
 
-          if (!ativo) return;
+    const dadosAcompanhamento = await buscarPedidoAcompanhamento();
 
-          if (!dadosAcompanhamento) {
-            setSemPedido(true);
-            setCarregando(false);
-            return;
-          }
-        }
-
-        const dados = await buscarPedido(
-          dadosAcompanhamento.pedidoId,
-          dadosAcompanhamento.telefone
-        );
-
-        if (!ativo) return;
-
-        setPedido(dados);
-        setErro(null);
-        setAtualizadoEm(new Date());
-
-        if (
-  dados.status === 'entregue' ||
-  dados.status === 'cancelado'
-) {
-  acompanhamentoEncerrado = true;
-}
-
-
-      } catch (error) {
-        if (ativo) {
-          setErro(error.message || 'Não foi possível consultar o pedido.');
-        }
-      } finally {
-        if (ativo) {
-          setCarregando(false);
-
-          // Nova consulta após 10 segundos
-          if (dadosAcompanhamento && !acompanhamentoEncerrado) {
-            temporizador = setTimeout(consultarPedido, 10000);
-          }
-        }
-      }
+    if (!dadosAcompanhamento) {
+      semPedidoEncontrado = true;
+      setSemPedido(true);
+      return;
     }
 
-    consultarPedido();
+    const { pedidoId, telefone } = dadosAcompanhamento;
+
+    const resultado = await buscarPedido(pedidoId, telefone);
+
+    setPedido(resultado);
+    setStatusAtual(resultado?.status || null);
+    setDataAtualizacao(new Date());
+
+    if (
+      resultado?.status === 'entregue' ||
+      resultado?.status === 'cancelado'
+    ) {
+      acompanhamentoEncerrado = true;
+    }
+
+  } catch (erro) {
+    console.error('Erro ao consultar pedido:', erro);
+    setErro('Não foi possível atualizar o pedido. Tentaremos novamente.');
+  } finally {
+    if (ativo) {
+      setCarregando(false);
+
+      if (!semPedidoEncontrado && !acompanhamentoEncerrado) {
+        temporizador = setTimeout(consultarPedido, 10000);
+      }
+    }
+  }
+}
+ consultarPedido();
 
     return () => {
       ativo = false;

@@ -196,7 +196,7 @@ async function sairDaConta() {
 </TouchableOpacity>
 
       <View style={styles.espaco}/>
-a
+
 
 <TouchableOpacity
   style={styles.botaoAcompanhar}

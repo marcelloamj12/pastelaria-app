@@ -88,11 +88,17 @@ export default function FinalizacaoScreen({ navigation }) {
       }
 
       // place holder
+      try {
       await salvarPedidoAcompanhamento(
   pedido.pedido_id,
   telefone
-);
-
+    );
+} catch (erroStorage) {
+  console.error(
+    'Pedido criado, mas não foi possível salvar o acompanhamento:',
+    erroStorage
+  );
+}
       limparCarrinho();
 
       navigation.navigate('PedidoConfirmado', {
