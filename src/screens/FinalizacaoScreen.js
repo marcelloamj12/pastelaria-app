@@ -41,38 +41,7 @@ export default function FinalizacaoScreen({ navigation }) {
   async function confirmarPedido() {
     if (carregando) return;
 
-    /*
-    setCarregando(true);
-
-    const pedido = await criarPedido({
-      nome,
-      telefone,
-      itens: [
-        {
-          produto_id: produto.id,
-          quantidade: quantidade,
-        }
-      ],
-      tipo,
-      pagamento,
-      endereco: tipo === 'entrega' ? endereco : null,
-      observacoes: observacoes.trim() || null,
-      taxaEntrega: 0,
-    });
-
-    navigation.navigate('PedidoConfirmado', {
-      pedidoId: pedido.pedido_id,
-      numero: pedido.numero,
-      total: pedido.total,
-      status: pedido.status,
-      telefone: telefone.trim(),
-    });
-
-  } catch (error) {
-    Alert.alert('Erro ao realizar pedido', error.message);
-  } finally {
-    setCarregando(false);
-    */ 
+    
     if (!nome.trim()) {
       mostrarAviso('Informe o nome do cliente.');
       return;
