@@ -2,10 +2,11 @@ import React from 'react';
 import {
   View,
   Text,
-  Button,
-  StyleSheet
+  StyleSheet,
+  TouchableOpacity
 } from 'react-native';
 import { STATUS_PEDIDO } from '../services/pedidoService';
+import { cores } from '../theme/theme';
 
 export default function PedidoConfirmadoScreen({ route, navigation }) {
 
@@ -44,10 +45,14 @@ const status = route.params?.status;
         </Text>
       )}
 
-      <Button
-        title="Voltar ao Início"
-        onPress={voltarInicio}
-      />
+      <TouchableOpacity
+  style={styles.botaoInicio}
+  onPress={voltarInicio}
+>
+  <Text style={styles.textoBotaoInicio}>
+    Voltar ao Início
+  </Text>
+</TouchableOpacity>
 
     </View>
   );
@@ -56,29 +61,51 @@ const status = route.params?.status;
 const styles = StyleSheet.create({
 
   container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: cores.fundo,
+  padding: 20,
+},
+
+botaoInicio: {
+  backgroundColor: cores.primaria,
+  paddingVertical: 16,
+  paddingHorizontal: 24,
+  borderRadius: 12,
+  alignItems: 'center',
+  width: '100%',
+},
+
+textoBotaoInicio: {
+  color: cores.branco,
+  fontSize: 16,
+  fontWeight: '700',
+},
 
   titulo: {
-    fontSize: 30,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
+  fontSize: 28,
+  fontWeight: '700',
+  color: cores.sucesso,
+  marginBottom: 20,
+  textAlign: 'center',
+},
 
   mensagem: {
-    fontSize: 18,
-    marginBottom: 15,
-    textAlign: 'center',
-  },
+  fontSize: 16,
+  color: cores.textoSecundario,
+  lineHeight: 24,
+  marginBottom: 20,
+  textAlign: 'center',
+},
 
   total: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 30,
-  },
+  fontSize: 24,
+  fontWeight: '700',
+  color: cores.primaria,
+  marginTop: 16,
+  marginBottom: 30,
+  textAlign: 'center',
+},
 
 });
