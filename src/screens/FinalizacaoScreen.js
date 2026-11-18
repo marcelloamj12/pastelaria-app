@@ -16,7 +16,7 @@ import { criarPedido } from '../services/pedidoService';
 import { cores } from '../theme/theme';
 
 export default function FinalizacaoScreen({ navigation }) {
-  const { itens, total } = useCarrinho();
+  const { itens, total, limparCarrinho } = useCarrinho();
 
   const [nome, setNome] = useState('');
   const [telefone, setTelefone] = useState('');
@@ -84,6 +84,8 @@ export default function FinalizacaoScreen({ navigation }) {
       if (!pedido?.pedido_id) {
         throw new Error('O banco não retornou o identificador do pedido.');
       }
+
+      limparCarrinho();
 
       navigation.navigate('PedidoConfirmado', {
         pedidoId: pedido.pedido_id,
