@@ -5,7 +5,7 @@ import { fazerLogout } from '../services/authService';
 import { listarCategorias, listarDestaques, formatarPreco } from '../services/cardapioService';
 import { useAuth } from '../context/AuthContext';
 import { cores } from '../theme/theme';
-import { bannerHome, imagensCategorias, imagensProdutos } from '../assets/imageMappings';
+import { bannerHome, imagensCategorias, imagensProdutos, logos } from '../assets/imageMappings';
 
 export default function HomeScreen({ navigation }) {
   const [destaques, setDestaques] = useState([]);
@@ -71,10 +71,10 @@ async function sairDaConta() {
   >
     <View style={styles.cabecalho}>
       <Image
-        source={require('../assets/logo.png')}
-        style={styles.logo}
-        resizeMode="contain"
-      />
+  source={logos.transparente}
+  style={styles.logo}
+  resizeMode="contain"
+/>
     </View>
     {carregandoAuth ? (
   <Text>Carregando sua conta...</Text>

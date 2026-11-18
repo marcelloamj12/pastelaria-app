@@ -38,3 +38,8 @@ export const imagensProdutos = {
   'Caldo de Cana': require('./produtos/caldodecana.jpg'),
   'Parecis': require('./produtos/parecis.jpg'),
 };
+
+export const logos = {
+  padrao: require('./logo.png'),
+  transparente: require('./logo-transparente.png'),
+};
