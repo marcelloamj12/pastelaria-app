@@ -1,106 +1,324 @@
+// =====================================================================
+// src/screens/LoginScreen.js
+// Tela de login do painel administrativo.
+//
+// Cartão: Tela de login do admin
+// Responsável: Adrian Rafa
+//
+// QUEM DECIDE SE PODE ENTRAR NÃO É ESTA TELA.
+// A regra fica no fazerLogin() do authService (Nicolas): ele confere o
+// perfil no banco e desloga quem não é admin. Esta tela só cuida de:
+//   1. mostrar os erros em português, dentro da própria tela
+//   2. mostrar que está carregando
+//   3. levar o admin para a tela de pedidos
+//   4. pular o login se o admin já estiver com a sessão aberta
+//
+// Por que o erro aparece na tela e não num Alert: o Alert.alert do
+// React Native não faz nada na versão web, e o app vai para a Vercel.
+// Lá o usuário erraria a senha e não veria mensagem nenhuma.
+// =====================================================================
 
-
-// tela de login teste para admins
-
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  View,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
   Text,
   TextInput,
-  Button,
-  StyleSheet,
-  Alert
+  View,
 } from 'react-native';
 
-import { fazerLogin } from '../services/authService';
+import { fazerLogin, fazerLogout } from '../services/authService';
+import { useAuth } from '../context/AuthContext';
+import { cores, bordas } from '../theme/theme';
+
+// Para onde o admin vai depois de entrar.
+const DESTINO_APOS_LOGIN = 'PedidosAdmin';
+
+// ---------------------------------------------------------------------
+// O Supabase responde em inglês. Aqui cada mensagem conhecida vira uma
+// frase que o dono da pastelaria entende. As mensagens que o authService
+// já escreve em português passam direto.
+// ---------------------------------------------------------------------
+function traduzirErro(mensagem = '') {
+  const m = mensagem.toLowerCase();
+
+  if (m.includes('invalid login credentials')) {
+    return 'E-mail ou senha incorretos.';
+  }
+  if (m.includes('email not confirmed')) {
+    return 'Este e-mail ainda não foi confirmado.';
+  }
+  if (m.includes('rate limit') || m.includes('too many')) {
+    return 'Muitas tentativas seguidas. Aguarde um minuto e tente de novo.';
+  }
+  if (m.includes('network') || m.includes('failed to fetch')) {
+    return 'Sem conexão com o servidor. Verifique sua internet.';
+  }
+  if (m.includes('nao foi possivel realizar o login')) {
+    return 'Já existe uma sessão aberta neste aparelho. Tente novamente.';
+  }
+
+  return mensagem || 'Não foi possível entrar. Tente novamente.';
+}
 
 export default function LoginScreen({ navigation }) {
+  const { sessao, perfil, carregando: carregandoSessao } = useAuth();
+
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
-  const [carregando, setCarregando] = useState(false);
+  const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [entrando, setEntrando] = useState(false);
+  const [erro, setErro] = useState('');
 
-  async function handleLogin() {
+  const campoSenha = useRef(null);
+  const jaRedirecionou = useRef(false);
+
+  function irParaPainel() {
+    if (jaRedirecionou.current) return;
+    jaRedirecionou.current = true;
+    // replace e não navigate: assim o "voltar" não traz o admin
+    // de novo para a tela de login.
+    navigation.replace(DESTINO_APOS_LOGIN);
+  }
+
+  // Se o admin já está logado (abriu o app de novo, por exemplo),
+  // não faz sentido pedir a senha outra vez.
+  useEffect(() => {
+    if (!carregandoSessao && perfil?.role === 'admin') {
+      irParaPainel();
+    }
+  }, [carregandoSessao, perfil]);
+
+  async function entrar() {
+    if (entrando) return;
+
+    setErro('');
+
+    if (!email.trim() || !senha) {
+      setErro('Informe seu e-mail e sua senha.');
+      return;
+    }
+
+    setEntrando(true);
+
     try {
-      setCarregando(true);
+      // Quem se cadastrou como cliente fica com a sessão aberta, e o
+      // fazerLogin() recusa qualquer login quando já existe sessão.
+      // Fechando a sessão antes, essa pessoa não fica presa aqui.
+      if (sessao && perfil?.role !== 'admin') {
+        await fazerLogout();
+      }
 
-      await fazerLogin({
-        email,
-        senha
-      });
+      await fazerLogin({ email: email.trim(), senha });
 
-      Alert.alert(
-        'Login realizado',
-        'Você entrou na sua conta com sucesso!'
-      );
-
-      setEmail('');
       setSenha('');
-
-    } catch (error) {
-      Alert.alert('Erro no login', error.message);
+      irParaPainel();
+    } catch (e) {
+      setErro(traduzirErro(e?.message));
     } finally {
-      setCarregando(false);
+      setEntrando(false);
     }
   }
 
+  // Enquanto o app descobre se já existe sessão, não mostra o formulário
+  // para não piscar a tela de login antes de redirecionar.
+  if (carregandoSessao) {
+    return (
+      <View style={styles.centro}>
+        <ActivityIndicator size="large" color={cores.primaria} />
+      </View>
+    );
+  }
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.titulo}>
-        Entrar na conta
-      </Text>
+    <KeyboardAvoidingView
+      style={styles.tela}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <View style={styles.cartao}>
+        <Text style={styles.titulo}>Painel da pastelaria</Text>
+        <Text style={styles.subtitulo}>
+          Acesso restrito aos administradores
+        </Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="E-mail"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
+        <Text style={styles.rotulo}>E-mail</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="seu@email.com"
+          placeholderTextColor={cores.textoSecundario}
+          value={email}
+          onChangeText={(texto) => {
+            setEmail(texto);
+            if (erro) setErro('');
+          }}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
+          autoComplete="email"
+          returnKeyType="next"
+          onSubmitEditing={() => campoSenha.current?.focus()}
+          editable={!entrando}
+        />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Senha"
-        value={senha}
-        onChangeText={setSenha}
-        secureTextEntry
-      />
+        <Text style={styles.rotulo}>Senha</Text>
+        <View style={styles.linhaSenha}>
+          <TextInput
+            ref={campoSenha}
+            style={[styles.input, styles.inputSenha]}
+            placeholder="Sua senha"
+            placeholderTextColor={cores.textoSecundario}
+            value={senha}
+            onChangeText={(texto) => {
+              setSenha(texto);
+              if (erro) setErro('');
+            }}
+            secureTextEntry={!mostrarSenha}
+            autoCapitalize="none"
+            autoComplete="password"
+            returnKeyType="go"
+            onSubmitEditing={entrar}
+            editable={!entrando}
+          />
+          <Pressable
+            onPress={() => setMostrarSenha((v) => !v)}
+            style={styles.botaoMostrar}
+            accessibilityRole="button"
+            accessibilityLabel={mostrarSenha ? 'Esconder senha' : 'Mostrar senha'}
+          >
+            <Text style={styles.textoMostrar}>
+              {mostrarSenha ? 'Esconder' : 'Mostrar'}
+            </Text>
+          </Pressable>
+        </View>
 
-      <Button
-        title={carregando ? 'Entrando...' : 'Entrar'}
-        onPress={handleLogin}
-        disabled={carregando}
-      />
+        {erro ? (
+          <View style={styles.caixaErro} accessibilityLiveRegion="polite">
+            <Text style={styles.textoErro}>{erro}</Text>
+          </View>
+        ) : null}
 
-     
-    </View>
-
+        <Pressable
+          onPress={entrar}
+          disabled={entrando}
+          style={({ pressed }) => [
+            styles.botao,
+            pressed && styles.botaoPressionado,
+            entrando && styles.botaoDesativado,
+          ]}
+          accessibilityRole="button"
+        >
+          {entrando ? (
+            <ActivityIndicator color={cores.branco} />
+          ) : (
+            <Text style={styles.textoBotao}>Entrar</Text>
+          )}
+        </Pressable>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  tela: {
     flex: 1,
     justifyContent: 'center',
-    padding: 25,
+    padding: 24,
+    backgroundColor: cores.fundo,
   },
-
-  titulo: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 30,
+  centro: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: cores.fundo,
   },
-
-  input: {
+  cartao: {
+    width: '100%',
+    maxWidth: 420,
+    alignSelf: 'center',
+    padding: 24,
+    backgroundColor: cores.branco,
+    borderRadius: bordas.grande,
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 15,
+    borderColor: cores.borda,
   },
-
-  espaco: {
-    height: 15,
+  titulo: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: cores.texto,
+    textAlign: 'center',
+  },
+  subtitulo: {
+    marginTop: 4,
+    marginBottom: 24,
+    fontSize: 14,
+    color: cores.textoSecundario,
+    textAlign: 'center',
+  },
+  rotulo: {
+    marginBottom: 6,
+    fontSize: 14,
+    fontWeight: '600',
+    color: cores.texto,
+  },
+  input: {
+    marginBottom: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: cores.texto,
+    backgroundColor: cores.cinzaClaro,
+    borderWidth: 1,
+    borderColor: cores.borda,
+    borderRadius: bordas.pequena,
+  },
+  linhaSenha: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  inputSenha: {
+    flex: 1,
+  },
+  botaoMostrar: {
+    marginLeft: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 14,
+  },
+  textoMostrar: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: cores.primaria,
+  },
+  caixaErro: {
+    marginBottom: 16,
+    padding: 12,
+    backgroundColor: '#FDECEC',
+    borderLeftWidth: 4,
+    borderLeftColor: cores.erro,
+    borderRadius: bordas.pequena,
+  },
+  textoErro: {
+    fontSize: 14,
+    color: cores.erro,
+  },
+  botao: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 50,
+    backgroundColor: cores.primaria,
+    borderRadius: bordas.media,
+  },
+  botaoPressionado: {
+    backgroundColor: cores.primariaEscura,
+  },
+  botaoDesativado: {
+    opacity: 0.7,
+  },
+  textoBotao: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: cores.branco,
   },
 });
