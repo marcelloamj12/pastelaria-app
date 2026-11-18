@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useRef, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,12 +8,15 @@ import {
   Image
 } from 'react-native';
 
+import { useFocusEffect } from '@react-navigation/native';
 import { useCardapio } from '../hooks/useCardapio';
 import { formatarPreco } from '../services/cardapioService';
 import { cores } from '../theme/theme';
 import { imagensProdutos } from '../assets/imageMappings';
 
 export default function CardapioScreen({ navigation, route }) {
+  const scrollRef = useRef(null);
+
   const {
     categorias,
     produtos,
@@ -23,6 +25,45 @@ export default function CardapioScreen({ navigation, route }) {
     carregando,
     erro
   } = useCardapio(route.params?.categoriaSlug ?? null);
+
+  // Atualiza o filtro quando uma categoria é selecionada na Home.
+  useEffect(() => {
+    setCategoriaAtiva(route.params?.categoriaSlug ?? null);
+  }, [route.params?.categoriaSlug, setCategoriaAtiva]);
+
+  // Ao clicar diretamente na aba Cardápio, exibe todos os produtos.
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('tabPress', () => {
+      setCategoriaAtiva(null);
+      navigation.setParams({ categoriaSlug: null });
+
+      scrollRef.current?.scrollTo({
+        y: 0,
+        animated: false,
+      });
+    });
+
+    return unsubscribe;
+  }, [navigation, setCategoriaAtiva]);
+
+  // Volta ao topo sempre que o Cardápio recebe o foco.
+  useFocusEffect(
+    useCallback(() => {
+      scrollRef.current?.scrollTo({
+        y: 0,
+        animated: false
+      });
+    }, [])
+  );
+
+  function selecionarCategoria(slug) {
+    setCategoriaAtiva(slug);
+
+    scrollRef.current?.scrollTo({
+      y: 0,
+      animated: false
+    });
+  }
 
   if (carregando) {
     return (
@@ -41,7 +82,11 @@ export default function CardapioScreen({ navigation, route }) {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView
+      ref={scrollRef}
+      style={{ flex: 1, backgroundColor: cores.fundo }}
+      contentContainerStyle={styles.container}
+    >
       <Text style={styles.titulo}>
         Cardápio
       </Text>
@@ -58,7 +103,10 @@ export default function CardapioScreen({ navigation, route }) {
               styles.categoriaBotao,
               categoriaAtiva === categoria.slug && styles.categoriaBotaoAtivo
             ]}
-            onPress={() => setCategoriaAtiva(categoria.slug)}
+            onPress={() => {
+	  navigation.setParams({ categoriaSlug: categoria.slug });
+	  selecionarCategoria(categoria.slug);
+	}}
           >
             <Text
               style={[
@@ -114,10 +162,10 @@ export default function CardapioScreen({ navigation, route }) {
 
       <TouchableOpacity
         style={styles.botaoVoltar}
-        onPress={() => navigation.goBack()}
+        onPress={() => navigation.navigate('Home')}
       >
         <Text style={styles.textoBotaoVoltar}>
-          Voltar
+          Voltar ao Início
         </Text>
       </TouchableOpacity>
     </ScrollView>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { View, Text, Button, StyleSheet, Alert, TouchableOpacity, Image, ScrollView } from 'react-native';
 
 import { fazerLogout } from '../services/authService';
@@ -6,8 +6,19 @@ import { listarCategorias, listarDestaques, formatarPreco } from '../services/ca
 import { useAuth } from '../context/AuthContext';
 import { cores } from '../theme/theme';
 import { bannerHome, imagensCategorias, imagensProdutos, logos } from '../assets/imageMappings';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function HomeScreen({ navigation }) {
+  const scrollRef = useRef(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      scrollRef.current?.scrollTo({
+        y: 0,
+        animated: false,
+      });
+    }, [])
+  );
   const [destaques, setDestaques] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
@@ -66,9 +77,10 @@ async function sairDaConta() {
 
   return (
   <ScrollView
-    style={styles.container}
-    contentContainerStyle={styles.conteudo}
-  >
+  ref={scrollRef}
+  style={styles.container}
+  contentContainerStyle={styles.conteudo}
+>
     <View style={styles.cabecalho}>
       <Image
   source={logos.transparente}
@@ -207,7 +219,11 @@ async function sairDaConta() {
 
       <TouchableOpacity
   style={styles.botaoCardapio}
-  onPress={() => navigation.navigate('Cardapio')}
+  onPress={() =>
+  navigation.navigate('Cardapio', {
+    categoriaSlug: null,
+  })
+}
 >
   <Text style={styles.textoBotaoCardapio}>
     Ver Cardápio Completo
