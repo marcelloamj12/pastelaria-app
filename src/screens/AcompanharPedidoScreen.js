@@ -1,21 +1,27 @@
 
-// place holder da tela "meus pedidos"
-
-
 import React, { useEffect, useState } from 'react';
-
 import {
   View,
   Text,
   ScrollView,
   StyleSheet,
   ActivityIndicator,
-  TouchableOpacity
+  TouchableOpacity,
 } from 'react-native';
 
-import { buscarPedido, STATUS_PEDIDO } from '../services/pedidoService';
-import { buscarPedidoAcompanhamento } from '../services/acompanhamentoPedidoStorage';
+import { Ionicons } from '@expo/vector-icons';
+import {
+  buscarPedido,
+  STATUS_PEDIDO,
+} from '../services/pedidoService';
+import {
+  buscarPedidoAcompanhamento,
+} from '../services/acompanhamentoPedidoStorage';
 import { cores } from '../theme/theme';
+
+const VERMELHO = cores.primaria;
+const CINZA = '#BFC1C5';
+const TEXTO_SECUNDARIO = '#777777';
 
 export default function AcompanharPedidoScreen({ navigation }) {
   const [pedido, setPedido] = useState(null);
@@ -27,55 +33,69 @@ export default function AcompanharPedidoScreen({ navigation }) {
   useEffect(() => {
     let ativo = true;
     let temporizador = null;
-    let dadosAcompanhamento = null;
     let acompanhamentoEncerrado = false;
     let semPedidoEncontrado = false;
-    
 
     async function consultarPedido() {
-  try {
-    setErro(null);
+      try {
+        setErro(null);
 
-    dadosAcompanhamento = await buscarPedidoAcompanhamento();
-    if (!ativo) return;
+        const dadosAcompanhamento =
+          await buscarPedidoAcompanhamento();
 
-    if (!dadosAcompanhamento) {
-      semPedidoEncontrado = true;
-      setSemPedido(true);
-      return;
-    }
+        if (!ativo) return;
 
-    const { pedidoId, telefone } = dadosAcompanhamento;
+        if (!dadosAcompanhamento) {
+          semPedidoEncontrado = true;
+          setSemPedido(true);
+          return;
+        }
 
-    const resultado = await buscarPedido(pedidoId, telefone);
-    if (!ativo) return;
+        const { pedidoId, telefone } = dadosAcompanhamento;
 
-    setPedido(resultado);
-    setAtualizadoEm(new Date()); // place holder
+        const resultado = await buscarPedido(
+          pedidoId,
+          telefone
+        );
 
-    if (
-      resultado?.status === 'entregue' ||
-      resultado?.status === 'cancelado'
-    ) {
-      acompanhamentoEncerrado = true;
-    }
+        if (!ativo) return;
 
-  } catch (erro) {
-    console.error('Erro ao consultar pedido:', erro);
-    if (ativo) {
-    setErro('Não foi possível atualizar o pedido. Tentaremos novamente.');
-  } 
-} finally {
-    if (ativo) {
-      setCarregando(false);
+        setPedido(resultado);
+        setAtualizadoEm(new Date());
 
-      if (!semPedidoEncontrado && !acompanhamentoEncerrado) {
-        temporizador = setTimeout(consultarPedido, 10000);
+        if (
+          resultado?.status === 'entregue' ||
+          resultado?.status === 'cancelado'
+        ) {
+          acompanhamentoEncerrado = true;
+        }
+      } catch (error) {
+        console.error('Erro ao consultar pedido:', error);
+
+        if (ativo) {
+          setErro(
+            'Não foi possível atualizar o pedido. ' +
+            'Tentaremos novamente.'
+          );
+        }
+      } finally {
+        if (ativo) {
+          setCarregando(false);
+
+          if (
+            !semPedidoEncontrado &&
+            !acompanhamentoEncerrado
+          ) {
+            temporizador = setTimeout(
+              consultarPedido,
+              10000
+            );
+          }
+        }
       }
     }
-  }
-}
- consultarPedido();
+
+    consultarPedido();
 
     return () => {
       ativo = false;
@@ -93,13 +113,169 @@ export default function AcompanharPedidoScreen({ navigation }) {
   }
 
   function voltarHome() {
-    navigation.navigate('Home');
+  navigation.navigate('MainTabs', {
+    screen: 'Home',
+  });
+}
+
+  function obterEtapas(tipo) {
+    const retirada = tipo === 'retirada';
+
+    return [
+      {
+        id: 'recebido',
+        titulo: 'Pedido recebido',
+        descricao: 'Seu pedido foi recebido.',
+      },
+      {
+        id: 'em_preparo',
+        titulo: 'Em preparo',
+        descricao: 'Estamos preparando seu pedido.',
+      },
+      {
+        id: 'pronto',
+        titulo: retirada
+          ? 'Pronto para retirada'
+          : 'Saiu para entrega',
+        descricao: retirada
+          ? 'Seu pedido está pronto para retirada.'
+          : 'Seu pedido está a caminho.',
+      },
+      {
+        id: 'entregue',
+        titulo: retirada
+          ? 'Pedido retirado'
+          : 'Entregue',
+        descricao: retirada
+          ? 'Seu pedido foi retirado.'
+          : 'Pedido entregue.',
+      },
+    ];
+  }
+
+  function obterEtapaAtual(status) {
+    const etapasStatus = {
+      recebido: 0,
+      em_preparo: 1,
+      pronto: 2,
+      saiu_entrega: 2,
+      entregue: 3,
+    };
+
+    return etapasStatus[status] ?? -1;
+  }
+
+  function renderizarLinhaTempo() {
+    if (!pedido) return null;
+
+    const etapas = obterEtapas(pedido.tipo);
+    const etapaAtual = obterEtapaAtual(pedido.status);
+    const cancelado = pedido.status === 'cancelado';
+
+    return (
+      <View style={styles.timelineContainer}>
+        <Text style={styles.subtitulo}>
+          Status do pedido
+        </Text>
+
+        {cancelado && (
+          <View style={styles.avisoCancelado}>
+            <Ionicons
+              name="close-circle"
+              size={22}
+              color="#B91C1C"
+            />
+
+            <View style={styles.avisoCanceladoConteudo}>
+              <Text style={styles.avisoCanceladoTitulo}>
+                Pedido cancelado
+              </Text>
+
+              <Text style={styles.avisoCanceladoTexto}>
+                Este pedido foi cancelado.
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {!cancelado && (
+          <View style={styles.timeline}>
+            {etapas.map((etapa, index) => {
+              const concluida = index < etapaAtual;
+              const atual = index === etapaAtual;
+              const pendente = index > etapaAtual;
+              const ultima = index === etapas.length - 1;
+
+              return (
+                <View
+                  key={etapa.id}
+                  style={styles.etapa}
+                >
+                  <View style={styles.indicadorColuna}>
+                    <View
+                      style={[
+                        styles.circulo,
+                        (concluida || atual) &&
+                          styles.circuloAtivo,
+                      ]}
+                    >
+                      {concluida ? (
+                        <Ionicons
+                          name="checkmark"
+                          size={14}
+                          color="#FFFFFF"
+                        />
+                      ) : atual ? (
+                        <View
+                          style={styles.circuloInterno}
+                        />
+                      ) : null}
+                    </View>
+
+                    {!ultima && (
+                      <View
+                        style={[
+                          styles.linha,
+                          concluida &&
+                            styles.linhaConcluida,
+                        ]}
+                      />
+                    )}
+                  </View>
+
+                  <View style={styles.etapaConteudo}>
+                    <Text
+                      style={[
+                        styles.etapaTitulo,
+                        atual && styles.etapaTituloAtual,
+                        pendente &&
+                          styles.etapaTituloPendente,
+                      ]}
+                    >
+                      {etapa.titulo}
+                    </Text>
+
+                    <Text style={styles.etapaDescricao}>
+                      {etapa.descricao}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        )}
+      </View>
+    );
   }
 
   if (carregando) {
     return (
       <View style={styles.centralizado}>
-        <ActivityIndicator size="large" color={cores.primaria} />
+        <ActivityIndicator
+          size="large"
+          color={VERMELHO}
+        />
+
         <Text style={styles.textoAuxiliar}>
           Consultando seu pedido...
         </Text>
@@ -110,19 +286,26 @@ export default function AcompanharPedidoScreen({ navigation }) {
   if (semPedido) {
     return (
       <View style={styles.centralizado}>
-        <Text style={styles.titulo}>
+        <Ionicons
+          name="receipt-outline"
+          size={48}
+          color={CINZA}
+        />
+
+        <Text style={styles.tituloVazio}>
           Nenhum pedido encontrado
         </Text>
 
-        <Text style={styles.textoAuxiliar}>
-          Você ainda não possui um pedido salvo para acompanhamento neste aparelho.
+        <Text style={styles.textoVazio}>
+          Você ainda não possui um pedido salvo
+          para acompanhamento neste aparelho.
         </Text>
 
         <TouchableOpacity
-          style={styles.botao}
+          style={styles.botaoSecundario}
           onPress={voltarHome}
         >
-          <Text style={styles.textoBotao}>
+          <Text style={styles.textoBotaoSecundario}>
             Voltar ao início
           </Text>
         </TouchableOpacity>
@@ -130,7 +313,8 @@ export default function AcompanharPedidoScreen({ navigation }) {
     );
   }
 
-  const informacoesStatus = STATUS_PEDIDO[pedido?.status];
+  const informacoesStatus =
+    STATUS_PEDIDO[pedido?.status];
 
   return (
     <ScrollView
@@ -148,83 +332,101 @@ export default function AcompanharPedidoScreen({ navigation }) {
           </Text>
 
           <Text style={styles.textoAuxiliar}>
-            Tentaremos consultar novamente em alguns segundos.
+            Tentaremos consultar novamente
+            em alguns segundos.
           </Text>
         </View>
       )}
 
       {pedido && (
         <>
-          <View style={styles.card}>
-            <Text style={styles.subtitulo}>
-              Pedido Nº {pedido.numero}
-            </Text>
+          <Text style={styles.numeroPedido}>
+            Pedido #{pedido.numero}
+          </Text>
 
-            <Text style={styles.label}>
-              Status atual
-            </Text>
+          <View style={styles.resumoContainer}>
+            <View style={styles.resumoLinha}>
+              <Text style={styles.resumoLabel}>
+                Tipo de pedido
+              </Text>
 
-            <View
-              style={[
-                styles.status,
-                { backgroundColor: informacoesStatus?.cor || '#9CA3AF' }
-              ]}
-            >
-              <Text style={styles.textoStatus}>
-                {informacoesStatus?.texto || pedido.status}
+              <Text style={styles.resumoValor}>
+                {pedido.tipo === 'retirada'
+                  ? 'Retirada'
+                  : 'Entrega'}
               </Text>
             </View>
 
-            <Text style={styles.textoAuxiliar}>
-              Tipo: {pedido.tipo}
-            </Text>
+            <View style={styles.resumoLinha}>
+              <Text style={styles.resumoLabel}>
+                Total
+              </Text>
 
-            <Text style={styles.textoAuxiliar}>
-              Total: R$ {formatarPreco(pedido.total)}
-            </Text>
+              <Text style={styles.resumoValor}>
+                R$ {formatarPreco(pedido.total)}
+              </Text>
+            </View>
 
             {pedido.criado_em && (
-              <Text style={styles.textoAuxiliar}>
-                Criado em: {new Date(pedido.criado_em).toLocaleString('pt-BR')}
+              <Text style={styles.dataPedido}>
+                Realizado em:{' '}
+                {new Date(
+                  pedido.criado_em
+                ).toLocaleString('pt-BR')}
               </Text>
             )}
           </View>
+
+          {renderizarLinhaTempo()}
 
           <View style={styles.card}>
             <Text style={styles.subtitulo}>
               Itens do pedido
             </Text>
 
-            {(pedido.itens_pedido || []).map((item) => (
-              <View
-                key={item.id}
-                style={styles.item}
-              >
-                <View style={styles.itemInfo}>
-                  <Text style={styles.nomeItem}>
-                    {item.nome_produto}
-                  </Text>
+            {(pedido.itens_pedido || []).map(
+              (item, index) => (
+                <View
+                  key={String(item.id ?? index)}
+                  style={styles.item}
+                >
+                  <View style={styles.itemInfo}>
+                    <Text style={styles.nomeItem}>
+                      {item.nome_produto}
+                    </Text>
 
-                  <Text style={styles.textoAuxiliar}>
-                    Quantidade: {item.quantidade}
+                    <Text style={styles.textoAuxiliar}>
+                      Quantidade: {item.quantidade}
+                    </Text>
+                  </View>
+
+                  <Text style={styles.precoItem}>
+                    R$ {formatarPreco(item.subtotal)}
                   </Text>
                 </View>
-
-                <Text style={styles.precoItem}>
-                  R$ {formatarPreco(item.subtotal)}
-                </Text>
-              </View>
-            ))}
+              )
+            )}
           </View>
 
-          <Text style={styles.atualizacao}>
-            {atualizadoEm
-              ? `Última consulta: ${atualizadoEm.toLocaleTimeString('pt-BR')}`
-              : 'Aguardando atualização...'}
-          </Text>
+          <View style={styles.atualizacaoContainer}>
+            <Ionicons
+              name="refresh-outline"
+              size={15}
+              color={TEXTO_SECUNDARIO}
+            />
 
-          <Text style={styles.textoAuxiliar}>
-            O status é verificado automaticamente a cada 10 segundos.
+            <Text style={styles.atualizacao}>
+              {atualizadoEm
+                ? `Última consulta: ${atualizadoEm.toLocaleTimeString('pt-BR')}`
+                : 'Aguardando atualização...'}
+            </Text>
+          </View>
+
+          <Text style={styles.textoAtualizacao}>
+            {pedido.status === 'entregue' ||
+            pedido.status === 'cancelado'
+              ? 'Acompanhamento encerrado.'
+              : 'O status é verificado automaticamente a cada 10 segundos.'}
           </Text>
         </>
       )}
@@ -261,50 +463,183 @@ const styles = StyleSheet.create({
   },
 
   titulo: {
-    fontSize: 26,
-    fontWeight: 'bold',
+    fontSize: 23,
+    fontWeight: '700',
     color: cores.texto,
-    marginBottom: 20,
+    marginBottom: 22,
+  },
+
+  tituloVazio: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: cores.texto,
+    textAlign: 'center',
+    marginTop: 18,
+    marginBottom: 12,
+  },
+
+  textoVazio: {
+    fontSize: 14,
+    color: TEXTO_SECUNDARIO,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+
+  numeroPedido: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: cores.texto,
+    marginBottom: 18,
+  },
+
+  resumoContainer: {
+    backgroundColor: cores.cinzaClaro,
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 24,
+  },
+
+  resumoLinha: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+
+  resumoLabel: {
+    fontSize: 14,
+    color: TEXTO_SECUNDARIO,
+  },
+
+  resumoValor: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: cores.texto,
+  },
+
+  dataPedido: {
+    fontSize: 12,
+    color: TEXTO_SECUNDARIO,
+    marginTop: 5,
+  },
+
+  timelineContainer: {
+    marginBottom: 24,
+  },
+
+  subtitulo: {
+    fontSize: 19,
+    fontWeight: '700',
+    color: cores.texto,
+    marginBottom: 18,
+  },
+
+  timeline: {
+    paddingTop: 2,
+  },
+
+  etapa: {
+    flexDirection: 'row',
+    minHeight: 78,
+  },
+
+  indicadorColuna: {
+    width: 30,
+    alignItems: 'center',
+  },
+
+  circulo: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: CINZA,
+    backgroundColor: cores.fundo,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
+  },
+
+  circuloAtivo: {
+    backgroundColor: VERMELHO,
+    borderColor: VERMELHO,
+  },
+
+  circuloInterno: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#FFFFFF',
+  },
+
+  linha: {
+    width: 3,
+    flex: 1,
+    backgroundColor: CINZA,
+  },
+
+  linhaConcluida: {
+    backgroundColor: VERMELHO,
+  },
+
+  etapaConteudo: {
+    flex: 1,
+    paddingLeft: 10,
+    paddingBottom: 24,
+  },
+
+  etapaTitulo: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: cores.texto,
+    marginBottom: 7,
+  },
+
+  etapaTituloAtual: {
+    color: VERMELHO,
+    fontWeight: '700',
+  },
+
+  etapaTituloPendente: {
+    color: '#777777',
+  },
+
+  etapaDescricao: {
+    fontSize: 13,
+    color: TEXTO_SECUNDARIO,
+    lineHeight: 19,
+  },
+
+  avisoCancelado: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    backgroundColor: '#FEF2F2',
+    padding: 15,
+    borderRadius: 12,
+  },
+
+  avisoCanceladoConteudo: {
+    flex: 1,
+  },
+
+  avisoCanceladoTitulo: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#B91C1C',
+    marginBottom: 5,
+  },
+
+  avisoCanceladoTexto: {
+    fontSize: 13,
+    color: '#7F1D1D',
   },
 
   card: {
     backgroundColor: cores.branco,
-    padding: 18,
+    padding: 16,
     borderRadius: 12,
-    marginBottom: 18,
-  },
-
-  subtitulo: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: cores.texto,
-    marginBottom: 15,
-  },
-
-  label: {
-    fontSize: 15,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-
-  status: {
-    alignSelf: 'flex-start',
-    paddingVertical: 9,
-    paddingHorizontal: 15,
-    borderRadius: 20,
-    marginBottom: 15,
-  },
-
-  textoStatus: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-    fontSize: 15,
-  },
-
-  textoAuxiliar: {
-    color: '#666666',
-    fontSize: 14,
-    marginTop: 7,
+    marginBottom: 20,
   },
 
   item: {
@@ -321,22 +656,41 @@ const styles = StyleSheet.create({
   },
 
   nomeItem: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 15,
+    fontWeight: '700',
     color: cores.texto,
+  },
+
+  textoAuxiliar: {
+    color: TEXTO_SECUNDARIO,
+    fontSize: 13,
+    marginTop: 6,
   },
 
   precoItem: {
-    fontSize: 15,
-    fontWeight: 'bold',
+    fontSize: 14,
+    fontWeight: '700',
+    color: cores.texto,
     marginLeft: 10,
   },
 
+  atualizacaoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 5,
+  },
+
   atualizacao: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
-    marginTop: 5,
-    color: cores.texto,
+    color: TEXTO_SECUNDARIO,
+  },
+
+  textoAtualizacao: {
+    fontSize: 12,
+    color: TEXTO_SECUNDARIO,
+    marginBottom: 22,
   },
 
   avisoErro: {
@@ -348,33 +702,23 @@ const styles = StyleSheet.create({
 
   textoErro: {
     color: '#B91C1C',
-    fontWeight: 'bold',
-  },
-
-  botao: {
-    backgroundColor: cores.primaria,
-    padding: 15,
-    borderRadius: 10,
-    marginTop: 20,
-  },
-
-  textoBotao: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
 
   botaoSecundario: {
     borderWidth: 1,
-    borderColor: cores.primaria,
+    borderColor: VERMELHO,
+    backgroundColor: cores.branco,
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: 'center',
-    marginTop: 15,
+    marginTop: 10,
+    width: '100%',
   },
 
   textoBotaoSecundario: {
-    color: cores.primaria,
-    fontWeight: 'bold',
+    color: VERMELHO,
+    fontWeight: '700',
     fontSize: 15,
   },
 });
