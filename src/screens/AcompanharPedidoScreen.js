@@ -93,8 +93,10 @@ export default function AcompanharPedidoScreen({ navigation }) {
   }
 
   function voltarHome() {
-    navigation.navigate('Home');
-  }
+  navigation.navigate('MainTabs', {
+    screen: 'Home',
+  });
+}
 
   if (carregando) {
     return (

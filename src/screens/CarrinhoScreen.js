@@ -5,77 +5,132 @@ import {
   Text,
   FlatList,
   StyleSheet,
-  TouchableOpacity
+  TouchableOpacity,
+  Image,
 } from 'react-native';
 
 import { cores } from '../theme/theme';
 import { useCarrinho } from '../context/CarrinhoContext';
+import { imagensProdutos } from '../assets/imageMappings';
 
 export default function CarrinhoScreen({ navigation }) {
   const {
     itens,
     alterarQuantidade,
     removerProduto,
-    total
+    total,
   } = useCarrinho();
 
   function formatarPreco(valor) {
-    return Number(valor || 0).toFixed(2).replace('.', ',');
+    return `R$ ${Number(valor || 0)
+      .toFixed(2)
+      .replace('.', ',')}`;
   }
 
   function renderizarProduto({ item }) {
+    const chave = item.chave ?? item.id;
+
     return (
       <View style={styles.produto}>
-        <Text style={styles.nome}>{item.nome}</Text>
+        <View style={styles.produtoLinha}>
+          {imagensProdutos[item.nome] ? (
+            <Image
+              source={imagensProdutos[item.nome]}
+              style={styles.produtoImagem}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={styles.imagemVazia}>
+              <Text style={styles.imagemVaziaTexto}>
+                Sem imagem
+              </Text>
+            </View>
+          )}
 
-        <Text style={styles.descricao}>
-          {item.descricao}
-        </Text>
+          <View style={styles.produtoInformacoes}>
+            <Text
+              style={styles.nome}
+              numberOfLines={2}
+            >
+              {item.nome}
+            </Text>
 
-        <Text style={styles.preco}>
-          R$ {formatarPreco(item.preco)}
-        </Text>
+            <Text style={styles.preco}>
+              {formatarPreco(item.preco)}
+            </Text>
 
-        <View style={styles.quantidadeContainer}>
-          <TouchableOpacity
-            style={styles.botaoQuantidade}
-            onPress={() => alterarQuantidade(item.id, -1)}
-          >
-            <Text style={styles.textoBotao}>−</Text>
-          </TouchableOpacity>
+            <View style={styles.quantidadeContainer}>
+              <TouchableOpacity
+                style={styles.botaoQuantidade}
+                onPress={() =>
+                  alterarQuantidade(chave, -1)
+                }
+              >
+                <Text style={styles.textoBotao}>
+                  −
+                </Text>
+              </TouchableOpacity>
 
-          <Text style={styles.quantidade}>
-            {item.quantidade}
+              <Text style={styles.quantidade}>
+                {item.quantidade}
+              </Text>
+
+              <TouchableOpacity
+                style={styles.botaoQuantidade}
+                onPress={() =>
+                  alterarQuantidade(chave, 1)
+                }
+              >
+                <Text style={styles.textoBotao}>
+                  +
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        {Boolean(item.observacao) && (
+          <View style={styles.observacaoContainer}>
+            <Text style={styles.observacaoTitulo}>
+              Observações:
+            </Text>
+
+            <Text style={styles.observacaoTexto}>
+              {item.observacao}
+            </Text>
+          </View>
+        )}
+
+        <View style={styles.produtoRodape}>
+          <Text style={styles.subtotal}>
+            Subtotal: {formatarPreco(
+              item.preco * item.quantidade
+            )}
           </Text>
 
           <TouchableOpacity
-            style={styles.botaoQuantidade}
-            onPress={() => alterarQuantidade(item.id, 1)}
+            onPress={() => removerProduto(chave)}
           >
-            <Text style={styles.textoBotao}>+</Text>
+            <Text style={styles.remover}>
+              Remover
+            </Text>
           </TouchableOpacity>
         </View>
-
-        <Text style={styles.subtotal}>
-          Subtotal: R$ {formatarPreco(item.preco * item.quantidade)}
-        </Text>
-
-        <TouchableOpacity
-          onPress={() => removerProduto(item.id)}
-        >
-          <Text style={styles.remover}>Remover produto</Text>
-        </TouchableOpacity>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.titulo}>Meu Carrinho</Text>
+      <Text style={styles.titulo}>
+        Meu Carrinho
+      </Text>
 
       <FlatList
         data={itens}
-        keyExtractor={(item) => String(item.id)}
+        keyExtractor={(item) =>
+          String(item.chave ?? item.id)
+        }
         renderItem={renderizarProduto}
         contentContainerStyle={styles.lista}
         ListEmptyComponent={
@@ -86,14 +141,22 @@ export default function CarrinhoScreen({ navigation }) {
       />
 
       <View style={styles.rodape}>
-        <Text style={styles.total}>
-          Total: R$ {formatarPreco(total)}
-        </Text>
+        <View style={styles.totalLinha}>
+          <Text style={styles.totalLabel}>
+            Total
+          </Text>
+
+          <Text style={styles.totalValor}>
+            {formatarPreco(total)}
+          </Text>
+        </View>
 
         {itens.length > 0 && (
           <TouchableOpacity
             style={styles.botaoFinalizar}
-            onPress={() => navigation.navigate('Finalizacao')}
+            onPress={() =>
+              navigation.navigate('Finalizacao')
+            }
           >
             <Text style={styles.textoBotaoFinalizar}>
               Finalizar Pedido
@@ -103,7 +166,9 @@ export default function CarrinhoScreen({ navigation }) {
 
         <TouchableOpacity
           style={styles.botaoVoltar}
-          onPress={() => navigation.navigate('Cardapio')}
+          onPress={() =>
+            navigation.navigate('Cardapio')
+          }
         >
           <Text style={styles.textoBotaoVoltar}>
             Continuar Comprando
@@ -118,115 +183,209 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: cores.fundo,
-    padding: 20
+    padding: 20,
   },
+
   titulo: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
     color: cores.texto,
-    marginBottom: 20
+    marginBottom: 18,
   },
+
   lista: {
     paddingBottom: 20,
-    flexGrow: 1
+    flexGrow: 1,
   },
+
+  // Card do produto
+
   produto: {
-    backgroundColor: cores.branco,
-    padding: 16,
+    backgroundColor: cores.cinzaClaro,
     borderRadius: 12,
-    marginBottom: 15,
-    elevation: 2
+    padding: 10,
+    marginBottom: 12,
   },
+
+  produtoLinha: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+
+  produtoImagem: {
+    width: 86,
+    height: 86,
+    borderRadius: 10,
+  },
+
+  imagemVazia: {
+    width: 86,
+    height: 86,
+    borderRadius: 10,
+    backgroundColor: cores.borda,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  imagemVaziaTexto: {
+    fontSize: 11,
+    color: '#888888',
+  },
+
+  produtoInformacoes: {
+    flex: 1,
+    minWidth: 0,
+    justifyContent: 'center',
+  },
+
   nome: {
-    fontSize: 20,
+    fontSize: 15,
     fontWeight: '700',
-    color: cores.texto
+    color: cores.texto,
+    marginBottom: 5,
   },
-  descricao: {
-    fontSize: 14,
-    color: '#666',
-    marginVertical: 6
-  },
+
   preco: {
-    fontSize: 18,
-    color: cores.primaria,
+    fontSize: 14,
     fontWeight: '600',
-    marginTop: 8
+    color: cores.primaria,
   },
+
+  // Quantidade
+
   quantidadeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 15
+    marginTop: 10,
   },
+
   botaoQuantidade: {
-    backgroundColor: cores.primaria,
-    width: 40,
-    height: 40,
-    borderRadius: 10,
+    width: 29,
+    height: 29,
+    borderRadius: 7,
+    backgroundColor: cores.branco,
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
+
   textoBotao: {
-    color: cores.branco,
-    fontSize: 22,
-    fontWeight: '700'
+    color: cores.texto,
+    fontSize: 19,
+    fontWeight: '700',
   },
+
   quantidade: {
-    fontSize: 20,
+    fontSize: 15,
     fontWeight: '600',
-    marginHorizontal: 20,
-    color: cores.texto
+    color: cores.texto,
+    marginHorizontal: 13,
   },
-  subtotal: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: cores.texto
+
+  // Observações
+
+  observacaoContainer: {
+    marginTop: 10,
+    padding: 9,
+    backgroundColor: cores.branco,
+    borderRadius: 8,
   },
-  remover: {
-    color: '#d32f2f',
+
+  observacaoTitulo: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: cores.texto,
+    marginBottom: 3,
+  },
+
+  observacaoTexto: {
+    fontSize: 12,
+    color: cores.textoSecundario,
+  },
+
+  // Subtotal e remoção
+
+  produtoRodape: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
     marginTop: 12,
-    fontWeight: '600'
   },
+
+  subtotal: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: cores.texto,
+  },
+
+  remover: {
+    fontSize: 12,
+    color: cores.primaria,
+    textDecorationLine: 'underline',
+  },
+
   vazio: {
     textAlign: 'center',
-    fontSize: 18,
-    color: '#777',
-    marginTop: 50
+    fontSize: 16,
+    color: '#777777',
+    marginTop: 50,
   },
+
+  // Rodapé do Carrinho
+
   rodape: {
     borderTopWidth: 1,
-    borderColor: '#ddd',
-    paddingTop: 15
+    borderTopColor: cores.borda,
+    paddingTop: 15,
   },
-  total: {
-    fontSize: 24,
+
+  totalLinha: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 18,
+  },
+
+  totalLabel: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: cores.texto,
+  },
+
+  totalValor: {
+    fontSize: 22,
     fontWeight: '700',
     color: cores.primaria,
-    marginBottom: 20
   },
+
   botaoFinalizar: {
     backgroundColor: cores.primaria,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
-    marginBottom: 12
+    marginBottom: 12,
   },
+
   textoBotaoFinalizar: {
     color: cores.branco,
     fontSize: 16,
-    fontWeight: '700'
+    fontWeight: '700',
   },
+
   botaoVoltar: {
     backgroundColor: cores.branco,
     borderWidth: 1,
     borderColor: cores.primaria,
     borderRadius: 12,
     paddingVertical: 14,
-    alignItems: 'center'
+    alignItems: 'center',
   },
+
   textoBotaoVoltar: {
     color: cores.primaria,
     fontSize: 15,
-    fontWeight: '600'
-  }
+    fontWeight: '600',
+  },
 });
