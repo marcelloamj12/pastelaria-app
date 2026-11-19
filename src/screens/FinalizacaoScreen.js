@@ -95,12 +95,16 @@ export default function FinalizacaoScreen({ navigation }) {
       });
 
     } catch (error) {
-      mostrarAviso(
-        'Erro ao realizar pedido: ' + (error.message || 'Tente novamente.')
-      );
-    } finally {
-      setCarregando(false);
-    }
+  console.error('Erro ao finalizar pedido:', error);
+
+  mostrarAviso(
+    'Não foi possível confirmar seu pedido no momento. ' +
+    'Verifique sua conexão e tente novamente. ' +
+    'Se o problema continuar, entre em contato com a loja antes de enviar outro pedido.'
+  );
+} finally {
+  setCarregando(false);
+}
   }
 
   function opcao(titulo, valor, selecionado, alterar) {

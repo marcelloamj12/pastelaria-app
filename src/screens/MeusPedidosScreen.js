@@ -59,13 +59,16 @@ export default function MeusPedidosScreen() {
       setPedidos(resultado);
       setPesquisou(true);
     } catch (error) {
-      setErro(
-        'Não foi possível consultar os pedidos: ' +
-        (error.message || 'Tente novamente.')
-      );
-    } finally {
-      setCarregando(false);
-    }
+  console.error('Erro ao consultar pedidos:', error);
+
+  setErro(
+    'Não foi possível consultar seus pedidos no momento. ' +
+    'Verifique sua conexão e tente novamente.'
+  );
+  setPesquisou(false);
+} finally {
+  setCarregando(false);
+}
   }
 
   return (
@@ -117,8 +120,23 @@ export default function MeusPedidosScreen() {
       )}
 
       {!!erro && (
-        <Text style={styles.erro}>{erro}</Text>
+  <View style={styles.erroContainer}>
+    <Text style={styles.erro}>{erro}</Text>
+
+    {telefone.replace(/\D/g, '').length >= 10 &&
+      telefone.replace(/\D/g, '').length <= 11 && (
+        <TouchableOpacity
+          style={styles.botaoAtualizar}
+          onPress={consultarPedidos}
+          disabled={carregando}
+        >
+          <Text style={styles.textoAtualizar}>
+            Tentar novamente
+          </Text>
+        </TouchableOpacity>
       )}
+  </View>
+)}
 
       {!carregando && pesquisou && pedidos.length === 0 && (
         <View style={styles.vazio}>
@@ -369,4 +387,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+
+  erroContainer: {
+  marginBottom: 16,
+  },
+
 });

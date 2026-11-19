@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
-  Button,
   StyleSheet,
   TouchableOpacity,
   Image,
@@ -25,6 +24,7 @@ export default function ProdutoScreen({ route, navigation }) {
   const [produto, setProduto] = useState(produtoInicial);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
+  const [tentativa, setTentativa] = useState(0);
 
   // Quantidade selecionada pelo cliente
   const [quantidade, setQuantidade] = useState(1);
@@ -33,23 +33,40 @@ export default function ProdutoScreen({ route, navigation }) {
   const { adicionarProduto } = useCarrinho();
 
   useEffect(() => {
-    async function carregarProduto() {
-      try {
-        setCarregando(true);
-        setErro(null);
+  let ativo = true;
 
-        const dados = await buscarProduto(produtoInicial.id);
+  async function carregarProduto() {
+    try {
+      setCarregando(true);
+      setErro(null);
+
+      const dados = await buscarProduto(produtoInicial.id);
+
+      if (ativo) {
         setProduto(dados);
-      } catch (e) {
-        setErro(e.message);
-      } finally {
+      }
+    } catch (e) {
+      console.error('Erro ao carregar produto:', e);
+
+      if (ativo) {
+        setErro(
+          'Não foi possível carregar o produto no momento. ' +
+          'Verifique sua conexão e tente novamente.'
+        );
+      }
+    } finally {
+      if (ativo) {
         setCarregando(false);
       }
     }
+  }
 
-    setQuantidade(1);
-    carregarProduto();
-  }, [produtoInicial.id]);
+  carregarProduto();
+
+  return () => {
+    ativo = false;
+  };
+}, [produtoInicial.id, tentativa]);
 
   function diminuirQuantidade() {
     setQuantidade((anterior) =>
@@ -88,34 +105,51 @@ export default function ProdutoScreen({ route, navigation }) {
   }
 
   if (erro) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.mensagem}>
-          Erro ao carregar o produto: {erro}
-        </Text>
+  return (
+    <View style={styles.container}>
+      <Text style={styles.mensagemErro}>
+        {erro}
+      </Text>
 
-        <Button
-          title="Voltar"
-          onPress={() => navigation.goBack()}
-        />
-      </View>
-    );
-  }
+      <TouchableOpacity
+        style={styles.botaoTentarNovamente}
+        onPress={() => setTentativa((valor) => valor + 1)}
+      >
+        <Text style={styles.textoTentarNovamente}>
+          Tentar novamente
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+  style={styles.botaoVoltar}
+  onPress={() => navigation.goBack()}
+>
+  <Text style={styles.textoBotaoVoltar}>
+    Voltar
+  </Text>
+</TouchableOpacity>
+    </View>
+  );
+}
 
   if (!produto) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.mensagem}>
-          Produto não encontrado.
-        </Text>
+  return (
+    <View style={styles.container}>
+      <Text style={styles.mensagem}>
+        Produto não encontrado.
+      </Text>
 
-        <Button
-          title="Voltar"
-          onPress={() => navigation.goBack()}
-        />
-      </View>
-    );
-  }
+      <TouchableOpacity
+        style={styles.botaoVoltar}
+        onPress={() => navigation.goBack()}
+      >
+        <Text style={styles.textoBotaoVoltar}>
+          Voltar
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
 
   const total = Number(produto.preco) * quantidade;
 
@@ -382,4 +416,49 @@ observacoesInput: {
     fontSize: 16,
     fontWeight: '700',
   },
+
+  mensagemErro: {
+  color: '#B91C1C',
+  backgroundColor: '#FEF2F2',
+  padding: 14,
+  margin: 20,
+  borderRadius: 10,
+  fontSize: 14,
+  lineHeight: 21,
+  textAlign: 'center',
+  },
+
+  botaoTentarNovamente: {
+  backgroundColor: cores.primaria,
+  paddingVertical: 14,
+  paddingHorizontal: 20,
+  borderRadius: 10,
+  alignItems: 'center',
+  marginHorizontal: 20,
+  marginBottom: 12,
+  },
+
+  textoTentarNovamente: {
+  color: cores.branco,
+  fontSize: 15,
+  fontWeight: '600',
+  },
+
+botaoVoltar: {
+  backgroundColor: cores.branco,
+  borderWidth: 1,
+  borderColor: cores.primaria,
+  paddingVertical: 14,
+  paddingHorizontal: 20,
+  borderRadius: 10,
+  alignItems: 'center',
+  marginHorizontal: 20,
+},
+
+textoBotaoVoltar: {
+  color: cores.primaria,
+  fontSize: 15,
+  fontWeight: '600',
+},
+
 });

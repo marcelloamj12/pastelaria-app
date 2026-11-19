@@ -42,6 +42,9 @@ export default function HomeScreen({ navigation }) {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
   const [categorias, setCategorias] = useState([]);
+  const [carregandoCategorias, setCarregandoCategorias] = useState(true);
+  const [erroCategorias, setErroCategorias] = useState(null);
+  const [tentativa, setTentativa] = useState(0);
 
   const {
     sessao,
@@ -56,28 +59,43 @@ export default function HomeScreen({ navigation }) {
         setCarregando(true);
         setErro(null);
 
-        const dados = await listarDestaques();
+const dados = await listarDestaques();
         setDestaques(dados);
       } catch (e) {
-        setErro(e.message);
-      } finally {
-        setCarregando(false);
-      }
+  console.error('Erro ao carregar destaques:', e);
+
+  setErro(
+    'Não foi possível carregar os produtos no momento. ' +
+    'Verifique sua conexão e tente novamente.'
+  );
+} finally {
+  setCarregando(false);
+}
     }
 
     carregarDestaques();
 
     async function carregarCategorias() {
-      try {
-        const dados = await listarCategorias();
-        setCategorias(dados);
-      } catch (error) {
-        console.error('Erro ao carregar categorias:', error.message);
-      }
-    }
+  try {
+    setCarregandoCategorias(true);
+    setErroCategorias(null);
 
-    carregarCategorias();
-  }, []);
+    const dados = await listarCategorias();
+    setCategorias(dados);
+  } catch (error) {
+    console.error('Erro ao carregar categorias:', error);
+
+    setErroCategorias(
+      'Não foi possível carregar as categorias no momento. ' +
+      'Verifique sua conexão e tente novamente.'
+    );
+  } finally {
+    setCarregandoCategorias(false);
+  }
+}
+
+        carregarCategorias();
+  }, [tentativa]);
 
   async function sairDaConta() {
     try {
@@ -139,8 +157,31 @@ export default function HomeScreen({ navigation }) {
             Categorias
           </Text>
 
-          <View style={styles.categoriasContainer}>
-            {categorias.map((categoria) => (
+          {carregandoCategorias && (
+  <Text>Carregando categorias...</Text>
+)}
+
+{erroCategorias && (
+  <View>
+    <Text style={styles.mensagemErro}>
+      {erroCategorias}
+    </Text>
+
+    <TouchableOpacity
+      style={styles.botaoTentarNovamente}
+      onPress={() => setTentativa((valor) => valor + 1)}
+    >
+      <Text style={styles.textoTentarNovamente}>
+        Tentar novamente
+      </Text>
+    </TouchableOpacity>
+  </View>
+)}
+
+<View style={styles.categoriasContainer}>
+  {!carregandoCategorias &&
+    !erroCategorias &&
+    categorias.map((categoria) => (
               <TouchableOpacity
                 key={categoria.id}
                 style={styles.categoriaCard}
@@ -173,10 +214,21 @@ export default function HomeScreen({ navigation }) {
           )}
 
           {erro && (
-            <Text>
-              Erro ao carregar os destaques: {erro}
-            </Text>
-          )}
+  <View>
+    <Text style={styles.mensagemErro}>
+      {erro}
+    </Text>
+
+    <TouchableOpacity
+      style={styles.botaoTentarNovamente}
+      onPress={() => setTentativa((valor) => valor + 1)}
+    >
+      <Text style={styles.textoTentarNovamente}>
+        Tentar novamente
+      </Text>
+    </TouchableOpacity>
+  </View>
+)}
 
           <View style={styles.produtosContainer}>
             {!carregando &&
@@ -486,4 +538,31 @@ const styles = StyleSheet.create({
   espaco: {
     height: 15,
   },
+
+  mensagemErro: {
+  color: '#B91C1C',
+  backgroundColor: '#FEF2F2',
+  padding: 12,
+  borderRadius: 10,
+  fontSize: 14,
+  lineHeight: 20,
+  textAlign: 'center',
+  marginBottom: 12,
+  },
+
+  botaoTentarNovamente: {
+  backgroundColor: cores.primaria,
+  paddingVertical: 12,
+  paddingHorizontal: 20,
+  borderRadius: 10,
+  alignItems: 'center',
+  marginBottom: 14,
+  },
+
+  textoTentarNovamente: {
+  color: cores.branco,
+  fontSize: 14,
+  fontWeight: '600',
+  },
+
 });

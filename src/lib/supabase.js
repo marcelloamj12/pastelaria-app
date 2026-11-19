@@ -29,14 +29,12 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    'Faltam as variáveis EXPO_PUBLIC_SUPABASE_URL e EXPO_PUBLIC_SUPABASE_ANON_KEY. ' +
-      'Copie o .env.example para .env, preencha e rode "npx expo start -c".'
-  );
-}
+export const configuracaoSupabaseValida = Boolean(
+  supabaseUrl && supabaseAnonKey
+);
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+export const supabase = configuracaoSupabaseValida
+  ? createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     // AsyncStorage guarda a sessão no celular. Já deixamos pronto
     // para quando o login entrar no escopo (N2).
@@ -45,5 +43,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     // No React Native não existe URL de callback do navegador.
     detectSessionInUrl: false,
-  },
-});
+    },
+})
+  : null;

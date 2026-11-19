@@ -19,13 +19,14 @@ export default function CardapioScreen({ navigation, route }) {
   const scrollRef = useRef(null);
 
   const {
-    categorias,
-    produtos,
-    categoriaAtiva,
-    setCategoriaAtiva,
-    carregando,
-    erro,
-  } = useCardapio(route.params?.categoriaSlug ?? null);
+  categorias,
+  produtos,
+  categoriaAtiva,
+  setCategoriaAtiva,
+  carregando,
+  erro,
+  recarregar,
+} = useCardapio(route.params?.categoriaSlug ?? null);
 
   // Atualiza o filtro quando uma categoria é selecionada na Home.
   useEffect(() => {
@@ -68,20 +69,34 @@ export default function CardapioScreen({ navigation, route }) {
   }
 
   if (carregando) {
-    return (
-      <View style={styles.container}>
-        <Text>Carregando cardápio...</Text>
-      </View>
-    );
-  }
+  return (
+    <View style={styles.container}>
+      <Text style={styles.mensagemInformativa}>
+        Carregando cardápio...
+      </Text>
+    </View>
+  );
+}
 
   if (erro) {
-    return (
-      <View style={styles.container}>
-        <Text>Erro ao carregar o cardápio: {erro}</Text>
-      </View>
-    );
-  }
+  return (
+    <View style={styles.container}>
+      <Text style={styles.mensagemErro}>
+        Não foi possível carregar o cardápio no momento.
+        Verifique sua conexão e tente novamente.
+      </Text>
+
+      <TouchableOpacity
+        style={styles.botaoTentarNovamente}
+        onPress={recarregar}
+      >
+        <Text style={styles.textoTentarNovamente}>
+          Tentar novamente
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
 
   return (
     <ScrollView
@@ -126,7 +141,13 @@ export default function CardapioScreen({ navigation, route }) {
       </ScrollView>
 
       {/* Lista de produtos */}
-      <View style={styles.listaProdutos}>
+{produtos.length === 0 && (
+  <Text style={styles.mensagemInformativa}>
+    Nenhum produto disponível nesta categoria no momento.
+  </Text>
+)}
+
+<View style={styles.listaProdutos}>
         {produtos.map((produto) => (
           <TouchableOpacity
             key={produto.id}
@@ -323,4 +344,38 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
   },
+
+  mensagemInformativa: {
+  color: '#666666',
+  fontSize: 15,
+  textAlign: 'center',
+  marginVertical: 20,
+  lineHeight: 22,
+  },
+
+  mensagemErro: {
+  color: '#B91C1C',
+  backgroundColor: '#FEF2F2',
+  padding: 14,
+  borderRadius: 10,
+  fontSize: 14,
+  textAlign: 'center',
+  lineHeight: 21,
+  marginBottom: 16,
+  },
+
+  botaoTentarNovamente: {
+  backgroundColor: cores.primaria,
+  paddingVertical: 14,
+  paddingHorizontal: 20,
+  borderRadius: 10,
+  alignItems: 'center',
+  },
+
+  textoTentarNovamente: {
+  color: cores.branco,
+  fontSize: 15,
+  fontWeight: '600',
+  },
+
 });
