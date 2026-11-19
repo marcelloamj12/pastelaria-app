@@ -19,6 +19,8 @@ import ItensPedidosAdminScreen from '../screens/ItensPedidosAdminScreen';
 
 import { cores } from '../theme/theme';
 import { useCarrinho } from '../context/CarrinhoContext';
+import { Ionicons } from '@expo/vector-icons';
+import LojaHeader from '../components/LojaHeader';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -35,7 +37,8 @@ function NavegacaoInferior() {
     <Tab.Navigator
       initialRouteName="Home"
       screenOptions={({ route }) => ({
-        tabBarActiveTintColor: cores.primaria,
+    headerShown: false,
+    tabBarActiveTintColor: cores.primaria,
         tabBarInactiveTintColor: '#888888',
         tabBarStyle: {
           backgroundColor: cores.branco,
@@ -50,33 +53,22 @@ function NavegacaoInferior() {
           fontWeight: '600',
         },
         tabBarHideOnKeyboard: true,
-        tabBarIcon: ({ color }) => {
-          let icone = '⌂';
+        tabBarIcon: ({ color, focused, size }) => {
+  const icones = {
+    Home: focused ? 'home' : 'home-outline',
+    Cardapio: focused ? 'restaurant' : 'restaurant-outline',
+    MeusPedidos: focused ? 'receipt' : 'receipt-outline',
+    Carrinho: focused ? 'cart' : 'cart-outline',
+  };
 
-          if (route.name === 'Cardapio') {
-            icone = '▤';
-          }
-
-          if (route.name === 'MeusPedidos') {
-            icone = '☷';
-          }
-
-          if (route.name === 'Carrinho') {
-            icone = '🛒';
-          }
-
-          return (
-            <Text
-              style={{
-                fontSize: 24,
-                color,
-                textAlign: 'center',
-              }}
-            >
-              {icone}
-            </Text>
-          );
-        },
+  return (
+    <Ionicons
+      name={icones[route.name] || 'ellipse-outline'}
+      size={size}
+      color={color}
+    />
+  );
+},
       })}
     >
       <Tab.Screen
@@ -129,31 +121,40 @@ export default function AppNavigator() {
     <Stack.Navigator initialRouteName="MainTabs">
 
       <Stack.Screen
-        name="MainTabs"
-        component={NavegacaoInferior}
-        options={{ headerShown: false }}
+    name="MainTabs"
+    component={NavegacaoInferior}
+    options={{
+      header: () => <LojaHeader />,
+    }}
       />
 
       <Stack.Screen
-        name="Produto"
-        component={ProdutoScreen}
-        options={{ title: 'Produto' }}
-      />
+  name="Produto"
+  component={ProdutoScreen}
+  options={({ navigation }) => ({
+    header: () => (
+      <LojaHeader onBack={() => navigation.goBack()} />
+    ),
+  })}
+/>
 
       <Stack.Screen
-        name="Finalizacao"
-        component={FinalizacaoScreen}
-        options={{ title: 'Finalizar Pedido' }}
-      />
+  name="Finalizacao"
+  component={FinalizacaoScreen}
+  options={({ navigation }) => ({
+    header: () => (
+      <LojaHeader onBack={() => navigation.goBack()} />
+    ),
+  })}
+/>
 
       <Stack.Screen
-        name="PedidoConfirmado"
-        component={PedidoConfirmadoScreen}
-        options={{
-          title: 'Pedido Confirmado',
-          headerBackVisible: false,
-        }}
-      />
+  name="PedidoConfirmado"
+  component={PedidoConfirmadoScreen}
+  options={{
+    header: () => <LojaHeader />,
+  }}
+/>
 
       <Stack.Screen
         name="Login"

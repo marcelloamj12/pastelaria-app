@@ -1,3 +1,4 @@
+
 import React, { useRef, useCallback, useEffect } from 'react';
 import {
   View,
@@ -5,7 +6,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image
+  Image,
 } from 'react-native';
 
 import { useFocusEffect } from '@react-navigation/native';
@@ -23,7 +24,7 @@ export default function CardapioScreen({ navigation, route }) {
     categoriaAtiva,
     setCategoriaAtiva,
     carregando,
-    erro
+    erro,
   } = useCardapio(route.params?.categoriaSlug ?? null);
 
   // Atualiza o filtro quando uma categoria é selecionada na Home.
@@ -51,17 +52,18 @@ export default function CardapioScreen({ navigation, route }) {
     useCallback(() => {
       scrollRef.current?.scrollTo({
         y: 0,
-        animated: false
+        animated: false,
       });
     }, [])
   );
 
   function selecionarCategoria(slug) {
+    navigation.setParams({ categoriaSlug: slug });
     setCategoriaAtiva(slug);
 
     scrollRef.current?.scrollTo({
       y: 0,
-      animated: false
+      animated: false,
     });
   }
 
@@ -84,82 +86,96 @@ export default function CardapioScreen({ navigation, route }) {
   return (
     <ScrollView
       ref={scrollRef}
-      style={{ flex: 1, backgroundColor: cores.fundo }}
+      style={styles.scroll}
       contentContainerStyle={styles.container}
     >
-      <Text style={styles.titulo}>
-        Cardápio
-      </Text>
-
+      {/* Categorias */}
       <Text style={styles.subtitulo}>
         Categorias
       </Text>
 
-      <View style={styles.categorias}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.categoriasScroll}
+        contentContainerStyle={styles.categorias}
+      >
         {categorias.map((categoria) => (
           <TouchableOpacity
             key={categoria.id}
             style={[
               styles.categoriaBotao,
-              categoriaAtiva === categoria.slug && styles.categoriaBotaoAtivo
+              categoriaAtiva === categoria.slug &&
+                styles.categoriaBotaoAtivo,
             ]}
-            onPress={() => {
-	  navigation.setParams({ categoriaSlug: categoria.slug });
-	  selecionarCategoria(categoria.slug);
-	}}
+            onPress={() =>
+              selecionarCategoria(categoria.slug)
+            }
           >
             <Text
               style={[
                 styles.categoriaTexto,
-                categoriaAtiva === categoria.slug && styles.categoriaTextoAtivo
+                categoriaAtiva === categoria.slug &&
+                  styles.categoriaTextoAtivo,
               ]}
             >
               {categoria.nome}
             </Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
 
-      {produtos.map((produto) => (
-        <View
-          key={produto.id}
-          style={styles.produto}
-        >
-          {imagensProdutos[produto.nome] && (
-            <Image
-              source={imagensProdutos[produto.nome]}
-              style={styles.produtoImagem}
-              resizeMode="cover"
-            />
-          )}
-
-          <Text style={styles.nomeProduto}>
-            {produto.nome}
-          </Text>
-
-          <Text>
-            {produto.descricao}
-          </Text>
-
-          <Text style={styles.preco}>
-            {formatarPreco(produto.preco)}
-          </Text>
-
+      {/* Lista de produtos */}
+      <View style={styles.listaProdutos}>
+        {produtos.map((produto) => (
           <TouchableOpacity
-            style={styles.botaoProduto}
+            key={produto.id}
+            style={styles.produto}
+            activeOpacity={0.8}
             onPress={() =>
               navigation.navigate('Produto', {
-                produto: produto
+                produto: produto,
               })
             }
           >
-            <Text style={styles.textoBotaoProduto}>
-              Ver Produto
-            </Text>
-          </TouchableOpacity>
-        </View>
-      ))}
+            {imagensProdutos[produto.nome] ? (
+              <Image
+                source={imagensProdutos[produto.nome]}
+                style={styles.produtoImagem}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={styles.produtoImagemVazia}>
+                <Text style={styles.textoImagemVazia}>
+                  Sem imagem
+                </Text>
+              </View>
+            )}
 
+            <View style={styles.produtoInformacoes}>
+              <Text
+                style={styles.nomeProduto}
+                numberOfLines={2}
+              >
+                {produto.nome}
+              </Text>
+
+              <Text
+                style={styles.descricaoProduto}
+                numberOfLines={3}
+              >
+                {produto.descricao}
+              </Text>
+
+              <Text style={styles.preco}>
+                {formatarPreco(produto.preco)}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Voltar à Home */}
       <TouchableOpacity
         style={styles.botaoVoltar}
         onPress={() => navigation.navigate('Home')}
@@ -173,53 +189,9 @@ export default function CardapioScreen({ navigation, route }) {
 }
 
 const styles = StyleSheet.create({
-  produtoImagem: {
-    width: '100%',
-    height: 160,
-    borderRadius: 12,
-    marginBottom: 12,
-    backgroundColor: cores.cinzaClaro,
-  },
-
-  categoriaBotaoAtivo: {
-    backgroundColor: cores.primaria,
-    borderColor: cores.primaria,
-  },
-
-  categoriaTextoAtivo: {
-    color: cores.branco,
-  },
-
-  botaoVoltar: {
-    backgroundColor: cores.branco,
-    borderWidth: 1,
-    borderColor: cores.primaria,
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 20,
-  },
-
-  textoBotaoVoltar: {
-    color: cores.primaria,
-    fontSize: 15,
-    fontWeight: '600',
-  },
-
-  botaoProduto: {
-    backgroundColor: cores.primaria,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-
-  textoBotaoProduto: {
-    color: cores.branco,
-    fontSize: 15,
-    fontWeight: '600',
+  scroll: {
+    flex: 1,
+    backgroundColor: cores.fundo,
   },
 
   container: {
@@ -228,12 +200,7 @@ const styles = StyleSheet.create({
     backgroundColor: cores.fundo,
   },
 
-  titulo: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: cores.texto,
-    marginBottom: 20,
-  },
+  // Categorias
 
   subtitulo: {
     fontSize: 20,
@@ -242,51 +209,118 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
 
+  categoriasScroll: {
+    flexGrow: 0,
+    marginBottom: 24,
+  },
+
   categorias: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: 25,
+    alignItems: 'center',
+    gap: 8,
+    paddingRight: 8,
   },
 
   categoriaBotao: {
-    backgroundColor: cores.branco,
-    borderWidth: 1,
-    borderColor: cores.borda,
-    borderRadius: 12,
-    paddingVertical: 12,
+    backgroundColor: cores.cinzaClaro,
+    borderRadius: 8,
+    paddingVertical: 10,
     paddingHorizontal: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
+  categoriaBotaoAtivo: {
+    backgroundColor: cores.primaria,
+  },
+
   categoriaTexto: {
-    fontSize: 14,
+    fontSize: 13,
+    fontWeight: '500',
+    color: cores.texto,
+  },
+
+  categoriaTextoAtivo: {
+    color: cores.branco,
     fontWeight: '600',
-    color: cores.primaria,
+  },
+
+  // Lista de produtos
+
+  listaProdutos: {
+    gap: 12,
   },
 
   produto: {
-    backgroundColor: cores.branco,
-    borderWidth: 1,
-    borderColor: cores.borda,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
+  flexDirection: 'row',
+  backgroundColor: cores.cinzaClaro,
+  borderRadius: 14,
+  overflow: 'hidden',
+  height: 140,
+  marginBottom: 12,
+},
+
+  produtoImagem: {
+  width: '43%',
+  height: 140,
+  backgroundColor: cores.cinzaClaro,
+},
+
+  produtoImagemVazia: {
+  width: '43%',
+  height: 140,
+  backgroundColor: cores.borda,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+  textoImagemVazia: {
+    fontSize: 12,
+    color: '#888888',
   },
 
+  produtoInformacoes: {
+  flex: 1,
+  padding: 12,
+  justifyContent: 'center',
+},
+
   nomeProduto: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '700',
     color: cores.texto,
     marginBottom: 6,
   },
 
+  descricaoProduto: {
+    fontSize: 12,
+    color: '#666666',
+    lineHeight: 17,
+    marginBottom: 8,
+  },
+
   preco: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '700',
     color: cores.primaria,
-    marginTop: 10,
-    marginBottom: 12,
+  },
+
+  // Botão voltar
+
+  botaoVoltar: {
+    backgroundColor: cores.branco,
+    borderWidth: 1,
+    borderColor: cores.primaria,
+    borderRadius: 10,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 24,
+    marginBottom: 20,
+  },
+
+  textoBotaoVoltar: {
+    color: cores.primaria,
+    fontSize: 15,
+    fontWeight: '600',
   },
 });
