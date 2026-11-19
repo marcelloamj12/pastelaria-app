@@ -20,6 +20,7 @@ const STATUS_ENTREGA = [
   { valor: 'em_preparo', texto: 'Em preparo' },
   { valor: 'saiu_entrega', texto: 'Saiu para entrega' },
   { valor: 'entregue', texto: 'Entregue' },
+  { valor: 'cancelado', texto: 'Cancelado' },
 ];
 
 const STATUS_RETIRADA = [
@@ -27,6 +28,7 @@ const STATUS_RETIRADA = [
   { valor: 'em_preparo', texto: 'Em preparo' },
   { valor: 'pronto', texto: 'Pronto p/ retirada' },
   { valor: 'entregue', texto: 'Entregue' },
+  { valor: 'cancelado', texto: 'Cancelado' },
 ];
 
 
@@ -198,6 +200,40 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 8,
   },
+
+  listaStatus: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  gap: 10,
+  marginTop: 15,
+},
+
+opcaoStatus: {
+  backgroundColor: '#E5E7EB',
+  borderWidth: 1,
+  borderColor: '#9CA3AF',
+  paddingVertical: 10,
+  paddingHorizontal: 14,
+  borderRadius: 8,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+statusSelecionado: {
+  backgroundColor: '#2563EB',
+  borderColor: '#2563EB',
+},
+
+textoStatus: {
+  color: '#374151',
+  fontSize: 14,
+  fontWeight: '600',
+},
+
+textoStatusSelecionado: {
+  color: '#FFFFFF',
+  fontWeight: 'bold',
+},
 
   erro: {
     color: 'red',

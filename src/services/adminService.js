@@ -137,8 +137,8 @@ export async function atualizarStatusPedido({ pedidoId, novoStatus }) {
 
   // verifica se os status correspondem ao tipo
   const statusPermitidos = pedido.tipo === 'retirada'
-    ? ['recebido', 'em_preparo', 'pronto', 'entregue']
-    : ['recebido', 'em_preparo', 'saiu_entrega', 'entregue'];
+    ? ['recebido', 'em_preparo', 'pronto', 'entregue', 'cancelado']
+    : ['recebido', 'em_preparo', 'saiu_entrega', 'entregue', 'cancelado'];
 
   if (!statusPermitidos.includes(novoStatus)) {
     throw new Error('Status inválido para este tipo de pedido.');

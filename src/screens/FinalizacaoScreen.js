@@ -14,6 +14,7 @@ import {
 import { useCarrinho } from '../context/CarrinhoContext';
 import { criarPedido } from '../services/pedidoService';
 import { cores } from '../theme/theme';
+import { salvarPedidoAcompanhamento } from '../services/acompanhamentoPedidoStorage'; //place holder
 
 export default function FinalizacaoScreen({ navigation }) {
   const { itens, total, limparCarrinho } = useCarrinho();
@@ -41,6 +42,7 @@ export default function FinalizacaoScreen({ navigation }) {
   async function confirmarPedido() {
     if (carregando) return;
 
+    
     if (!nome.trim()) {
       mostrarAviso('Informe o nome do cliente.');
       return;
@@ -85,6 +87,18 @@ export default function FinalizacaoScreen({ navigation }) {
         throw new Error('O banco não retornou o identificador do pedido.');
       }
 
+      // place holder
+      try {
+      await salvarPedidoAcompanhamento(
+  pedido.pedido_id,
+  telefone
+    );
+} catch (erroStorage) {
+  console.error(
+    'Pedido criado, mas não foi possível salvar o acompanhamento:',
+    erroStorage
+  );
+}
       limparCarrinho();
 
       navigation.navigate('PedidoConfirmado', {
@@ -101,6 +115,7 @@ export default function FinalizacaoScreen({ navigation }) {
     } finally {
       setCarregando(false);
     }
+    // fim do conflito
   }
 
   function opcao(titulo, valor, selecionado, alterar) {

@@ -237,6 +237,17 @@ export default function HomeScreen({ navigation }) {
           Ver Cardápio Completo
         </Text>
       </TouchableOpacity>
+{/* Acompanhar pedido */}
+{!carregandoAuth && perfil?.role !== 'admin' && (
+  <TouchableOpacity
+    style={styles.botaoAcompanhar}
+    onPress={() => navigation.navigate('AcompanharPedido')}
+  >
+    <Text style={styles.textoBotaoAcompanhar}>
+      Acompanhar Pedido
+    </Text>
+  </TouchableOpacity>
+)}
 
       <View style={styles.espaco} />
 
@@ -486,4 +497,22 @@ const styles = StyleSheet.create({
   espaco: {
     height: 15,
   },
+
+botaoAcompanhar: {
+  backgroundColor: cores.branco,
+  borderWidth: 1,
+  borderColor: cores.primaria,
+  paddingVertical: 15,
+  paddingHorizontal: 20,
+  borderRadius: 12,
+  alignItems: 'center',
+  marginTop: 12,
+},
+
+textoBotaoAcompanhar: {
+  color: cores.primaria,
+  fontSize: 16,
+  fontWeight: '700',
+},
+
 });
