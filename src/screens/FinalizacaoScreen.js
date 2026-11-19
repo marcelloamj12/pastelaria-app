@@ -70,10 +70,10 @@ export default function FinalizacaoScreen({ navigation }) {
         nome: nome.trim(),
         telefone: telefone.trim(),
         itens: itens.map(item => ({
-          produto_id: item.id,
-          quantidade: item.quantidade,
-          observacao: null
-        })),
+    produto_id: item.id,
+    quantidade: item.quantidade,
+    observacao: item.observacao?.trim() || null
+	})),
         tipo,
         pagamento,
         endereco: tipo === 'entrega' ? endereco.trim() : null,
@@ -202,11 +202,21 @@ export default function FinalizacaoScreen({ navigation }) {
           <Text>Seu carrinho está vazio.</Text>
         ) : (
           itens.map(item => (
-            <View key={String(item.id)} style={styles.produto}>
+    <View
+      key={String(item.chave ?? item.id)}
+      style={styles.produto}
+    >
               <View style={styles.produtoInfo}>
                 <Text style={styles.nomeProduto}>{item.nome}</Text>
                 <Text>Quantidade: {item.quantidade}</Text>
-                <Text>Unitário: R$ {formatarPreco(item.preco)}</Text>
+
+	{Boolean(item.observacao) && (
+    <Text style={styles.observacaoProduto}>
+      Observações: {item.observacao}
+    </Text>
+	)}
+
+<Text>Unitário: R$ {formatarPreco(item.preco)}</Text>
               </View>
 
               <Text style={styles.subtotal}>
@@ -252,65 +262,74 @@ export default function FinalizacaoScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+
+observacaoProduto: {
+  fontSize: 13,
+  color: '#666666',
+  marginTop: 5,
+  marginBottom: 5,
+  flexShrink: 1,
+},
+
   container: {
     flex: 1,
     backgroundColor: cores.fundo
   },
   conteudo: {
-    padding: 20,
-    paddingBottom: 40
-  },
+  padding: 16,
+  paddingBottom: 30,
+},
   titulo: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#222'
-  },
+  fontSize: 24,
+  fontWeight: '700',
+  marginBottom: 16,
+  color: cores.texto,
+},
   card: {
-    backgroundColor: '#fff',
-    padding: 18,
-    borderRadius: 12,
-    marginBottom: 20,
-    elevation: 2
-  },
+  backgroundColor: cores.branco,
+  padding: 16,
+  borderRadius: 12,
+  marginBottom: 14,
+  elevation: 2,
+},
   subtitulo: {
-    fontSize: 21,
-    fontWeight: 'bold',
-    marginBottom: 18,
-    color: '#333'
-  },
+  fontSize: 18,
+  fontWeight: '700',
+  marginBottom: 14,
+  color: cores.texto,
+},
   label: {
-    fontSize: 15,
-    fontWeight: '600',
-    marginBottom: 7,
-    color: '#444'
-  },
+  fontSize: 14,
+  fontWeight: '600',
+  marginBottom: 6,
+  color: cores.texto,
+},
   input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    marginBottom: 16,
-    backgroundColor: '#fafafa'
-  },
+  borderWidth: 1,
+  borderColor: cores.borda,
+  borderRadius: 8,
+  padding: 11,
+  fontSize: 14,
+  marginBottom: 12,
+  backgroundColor: '#FAFAFA',
+},
   endereco: {
-    minHeight: 75,
-    textAlignVertical: 'top'
-  },
+  minHeight: 70,
+  textAlignVertical: 'top',
+},
   opcoes: {
-    flexDirection: 'row',
-    marginBottom: 15
-  },
+  flexDirection: 'row',
+  marginBottom: 10,
+},
   opcao: {
-    flex: 1,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    alignItems: 'center',
-    borderRadius: 8,
-    marginRight: 6
-  },
+  flex: 1,
+  padding: 11,
+  borderWidth: 1,
+  borderColor: cores.borda,
+  alignItems: 'center',
+  borderRadius: 8,
+  marginRight: 6,
+},
   opcaoSelecionada: {
     backgroundColor: cores.primaria,
     borderColor: cores.primaria
@@ -378,12 +397,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold'
   },
   botaoVoltar: {
-    marginTop: 15,
-    padding: 15,
-    alignItems: 'center'
-  },
+  marginTop: 12,
+  paddingVertical: 14,
+  alignItems: 'center',
+  borderWidth: 1,
+  borderColor: cores.primaria,
+  backgroundColor: cores.branco,
+  borderRadius: 10,
+},
   textoVoltar: {
-    color: '#444',
-    fontSize: 16
-  }
+  color: cores.primaria,
+  fontSize: 15,
+  fontWeight: '600',
+},
 });
