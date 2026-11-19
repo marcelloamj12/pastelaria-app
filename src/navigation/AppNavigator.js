@@ -1,8 +1,9 @@
+
 import React from 'react';
-import { Text } from 'react-native';
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
 
 import HomeScreen from '../screens/HomeScreen';
 import CardapioScreen from '../screens/CardapioScreen';
@@ -11,6 +12,8 @@ import ProdutoScreen from '../screens/ProdutoScreen';
 import CarrinhoScreen from '../screens/CarrinhoScreen';
 import FinalizacaoScreen from '../screens/FinalizacaoScreen';
 import PedidoConfirmadoScreen from '../screens/PedidoConfirmadoScreen';
+import AcompanharPedidoScreen from '../screens/AcompanharPedidoScreen';
+
 import LoginScreen from '../screens/LoginScreen';
 import AdminScreen from '../screens/AdminScreen';
 import ClientesAdminScreen from '../screens/ClientesAdminScreen';
@@ -19,7 +22,6 @@ import ItensPedidosAdminScreen from '../screens/ItensPedidosAdminScreen';
 
 import { cores } from '../theme/theme';
 import { useCarrinho } from '../context/CarrinhoContext';
-import { Ionicons } from '@expo/vector-icons';
 import LojaHeader from '../components/LojaHeader';
 
 const Stack = createNativeStackNavigator();
@@ -33,12 +35,19 @@ function NavegacaoInferior() {
     0
   );
 
+  const icones = {
+    Home: ['home', 'home-outline'],
+    Cardapio: ['restaurant', 'restaurant-outline'],
+    MeusPedidos: ['receipt', 'receipt-outline'],
+    Carrinho: ['cart', 'cart-outline'],
+  };
+
   return (
     <Tab.Navigator
       initialRouteName="Home"
       screenOptions={({ route }) => ({
-    headerShown: false,
-    tabBarActiveTintColor: cores.primaria,
+        headerShown: false,
+        tabBarActiveTintColor: cores.primaria,
         tabBarInactiveTintColor: '#888888',
         tabBarStyle: {
           backgroundColor: cores.branco,
@@ -54,21 +63,19 @@ function NavegacaoInferior() {
         },
         tabBarHideOnKeyboard: true,
         tabBarIcon: ({ color, focused, size }) => {
-  const icones = {
-    Home: focused ? 'home' : 'home-outline',
-    Cardapio: focused ? 'restaurant' : 'restaurant-outline',
-    MeusPedidos: focused ? 'receipt' : 'receipt-outline',
-    Carrinho: focused ? 'cart' : 'cart-outline',
-  };
+          const nomes = icones[route.name] || [
+            'ellipse',
+            'ellipse-outline',
+          ];
 
-  return (
-    <Ionicons
-      name={icones[route.name] || 'ellipse-outline'}
-      size={size}
-      color={color}
-    />
-  );
-},
+          return (
+            <Ionicons
+              name={focused ? nomes[0] : nomes[1]}
+              size={size}
+              color={color}
+            />
+          );
+        },
       })}
     >
       <Tab.Screen
@@ -76,7 +83,6 @@ function NavegacaoInferior() {
         component={HomeScreen}
         options={{
           title: 'Início',
-          headerShown: false,
         }}
       />
 
@@ -97,21 +103,22 @@ function NavegacaoInferior() {
       />
 
       <Tab.Screen
-  name="Carrinho"
-  component={CarrinhoScreen}
-  options={{
-    title: 'Carrinho',
-    tabBarBadge: quantidadeCarrinho > 0
-      ? quantidadeCarrinho
-      : undefined,
-    tabBarBadgeStyle: {
-      backgroundColor: cores.primaria,
-      color: cores.branco,
-      fontSize: 11,
-      fontWeight: '700',
-    },
-  }}
-/>
+        name="Carrinho"
+        component={CarrinhoScreen}
+        options={{
+          title: 'Carrinho',
+          tabBarBadge:
+            quantidadeCarrinho > 0
+              ? quantidadeCarrinho
+              : undefined,
+          tabBarBadgeStyle: {
+            backgroundColor: cores.primaria,
+            color: cores.branco,
+            fontSize: 11,
+            fontWeight: '700',
+          },
+        }}
+      />
     </Tab.Navigator>
   );
 }
@@ -119,73 +126,97 @@ function NavegacaoInferior() {
 export default function AppNavigator() {
   return (
     <Stack.Navigator initialRouteName="MainTabs">
-
       <Stack.Screen
-    name="MainTabs"
-    component={NavegacaoInferior}
-    options={{
-      header: () => <LojaHeader />,
-    }}
+        name="MainTabs"
+        component={NavegacaoInferior}
+        options={{
+          header: () => <LojaHeader />,
+        }}
       />
 
       <Stack.Screen
-  name="Produto"
-  component={ProdutoScreen}
-  options={({ navigation }) => ({
-    header: () => (
-      <LojaHeader onBack={() => navigation.goBack()} />
-    ),
-  })}
-/>
+        name="Produto"
+        component={ProdutoScreen}
+        options={({ navigation }) => ({
+          header: () => (
+            <LojaHeader
+              onBack={() => navigation.goBack()}
+            />
+          ),
+        })}
+      />
 
       <Stack.Screen
-  name="Finalizacao"
-  component={FinalizacaoScreen}
-  options={({ navigation }) => ({
-    header: () => (
-      <LojaHeader onBack={() => navigation.goBack()} />
-    ),
-  })}
-/>
+        name="Finalizacao"
+        component={FinalizacaoScreen}
+        options={({ navigation }) => ({
+          header: () => (
+            <LojaHeader
+              onBack={() => navigation.goBack()}
+            />
+          ),
+        })}
+      />
 
       <Stack.Screen
-  name="PedidoConfirmado"
-  component={PedidoConfirmadoScreen}
-  options={{
-    header: () => <LojaHeader />,
-  }}
-/>
+        name="PedidoConfirmado"
+        component={PedidoConfirmadoScreen}
+        options={{
+          header: () => <LojaHeader />,
+        }}
+      />
+
+      <Stack.Screen
+        name="AcompanharPedido"
+        component={AcompanharPedidoScreen}
+        options={({ navigation }) => ({
+          header: () => (
+            <LojaHeader
+              onBack={() => navigation.goBack()}
+            />
+          ),
+        })}
+      />
 
       <Stack.Screen
         name="Login"
         component={LoginScreen}
-        options={{ title: 'Entrar' }}
+        options={{
+          title: 'Entrar',
+        }}
       />
 
       <Stack.Screen
         name="Admin"
         component={AdminScreen}
-        options={{ title: 'Painel Administrativo' }}
+        options={{
+          title: 'Painel Administrativo',
+        }}
       />
 
       <Stack.Screen
         name="ClientesAdmin"
         component={ClientesAdminScreen}
-        options={{ title: 'Clientes' }}
+        options={{
+          title: 'Clientes',
+        }}
       />
 
       <Stack.Screen
         name="PedidosAdmin"
         component={PedidosAdminScreen}
-        options={{ title: 'Pedidos' }}
+        options={{
+          title: 'Pedidos',
+        }}
       />
 
       <Stack.Screen
         name="ItensPedidosAdmin"
         component={ItensPedidosAdminScreen}
-        options={{ title: 'Itens dos Pedidos' }}
+        options={{
+          title: 'Itens dos Pedidos',
+        }}
       />
-
     </Stack.Navigator>
   );
 }

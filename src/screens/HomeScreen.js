@@ -289,6 +289,17 @@ const dados = await listarDestaques();
           Ver Cardápio Completo
         </Text>
       </TouchableOpacity>
+{/* Acompanhar pedido */}
+{!carregandoAuth && perfil?.role !== 'admin' && (
+  <TouchableOpacity
+    style={styles.botaoAcompanhar}
+    onPress={() => navigation.navigate('AcompanharPedido')}
+  >
+    <Text style={styles.textoBotaoAcompanhar}>
+      Acompanhar Pedido
+    </Text>
+  </TouchableOpacity>
+)}
 
       <View style={styles.espaco} />
 
@@ -540,29 +551,46 @@ const styles = StyleSheet.create({
   },
 
   mensagemErro: {
-  color: '#B91C1C',
-  backgroundColor: '#FEF2F2',
-  padding: 12,
-  borderRadius: 10,
-  fontSize: 14,
-  lineHeight: 20,
-  textAlign: 'center',
-  marginBottom: 12,
+    color: '#B91C1C',
+    backgroundColor: '#FEF2F2',
+    padding: 12,
+    borderRadius: 10,
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
+    marginBottom: 12,
   },
 
   botaoTentarNovamente: {
-  backgroundColor: cores.primaria,
-  paddingVertical: 12,
-  paddingHorizontal: 20,
-  borderRadius: 10,
-  alignItems: 'center',
-  marginBottom: 14,
+    backgroundColor: cores.primaria,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginBottom: 14,
   },
 
   textoTentarNovamente: {
-  color: cores.branco,
-  fontSize: 14,
-  fontWeight: '600',
+    color: cores.branco,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
+  botaoAcompanhar: {
+    backgroundColor: cores.branco,
+    borderWidth: 1,
+    borderColor: cores.primaria,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+
+  textoBotaoAcompanhar: {
+    color: cores.primaria,
+    fontSize: 16,
+    fontWeight: '700',
   },
 
 });
