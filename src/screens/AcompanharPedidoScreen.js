@@ -23,7 +23,7 @@ const VERMELHO = cores.primaria;
 const CINZA = '#BFC1C5';
 const TEXTO_SECUNDARIO = '#777777';
 
-export default function AcompanharPedidoScreen({ navigation }) {
+export default function AcompanharPedidoScreen({ navigation, route }) {
   const [pedido, setPedido] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [semPedido, setSemPedido] = useState(false);
@@ -40,8 +40,13 @@ export default function AcompanharPedidoScreen({ navigation }) {
       try {
         setErro(null);
 
-        const dadosAcompanhamento =
-          await buscarPedidoAcompanhamento();
+                const dadosAcompanhamento =
+          route.params?.pedidoId && route.params?.telefone
+            ? {
+                pedidoId: route.params.pedidoId,
+                telefone: route.params.telefone,
+              }
+            : await buscarPedidoAcompanhamento();
 
         if (!ativo) return;
 
@@ -104,7 +109,7 @@ export default function AcompanharPedidoScreen({ navigation }) {
         clearTimeout(temporizador);
       }
     };
-  }, []);
+    }, [route.params?.pedidoId, route.params?.telefone]);
 
   function formatarPreco(valor) {
     return Number(valor || 0)

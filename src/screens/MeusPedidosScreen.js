@@ -16,7 +16,7 @@ import {
 
 import { cores } from '../theme/theme';
 
-export default function MeusPedidosScreen() {
+export default function MeusPedidosScreen({ navigation }) {
   const [telefone, setTelefone] = useState('');
   const [pedidos, setPedidos] = useState([]);
   const [carregando, setCarregando] = useState(false);
@@ -198,6 +198,19 @@ export default function MeusPedidosScreen() {
               <Text style={styles.total}>
                 {formatarPreco(pedido.total)}
               </Text>
+		            <TouchableOpacity
+              style={styles.botaoAcompanhar}
+              onPress={() =>
+                navigation.navigate('AcompanharPedido', {
+                  pedidoId: pedido.id,
+                  telefone: telefone.replace(/\D/g, ''),
+                })
+              }
+            >
+              <Text style={styles.textoBotaoAcompanhar}>
+                Acompanhar pedido
+              </Text>
+            </TouchableOpacity>
             </View>
           </View>
         );
@@ -390,6 +403,20 @@ const styles = StyleSheet.create({
 
   erroContainer: {
   marginBottom: 16,
+  },
+
+  botaoAcompanhar: {
+    backgroundColor: cores.primaria,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 14,
+  },
+
+  textoBotaoAcompanhar: {
+    color: cores.branco,
+    fontSize: 14,
+    fontWeight: '700',
   },
 
 });

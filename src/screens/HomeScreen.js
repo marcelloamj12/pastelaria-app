@@ -316,7 +316,7 @@ const dados = await listarDestaques();
 {!carregandoAuth && perfil?.role !== 'admin' && (
   <TouchableOpacity
     style={styles.botaoAcompanhar}
-    onPress={() => navigation.navigate('AcompanharPedido')}
+    onPress={() => navigation.navigate('MeusPedidos')}
   >
     <Text style={styles.textoBotaoAcompanhar}>
       Acompanhar Pedido
