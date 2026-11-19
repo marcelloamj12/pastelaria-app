@@ -30,11 +30,31 @@ export default function PedidoConfirmadoScreen({
       .replace('.', ',')}`;
   }
 
-  function voltarInicio() {
-    navigation.navigate('MainTabs', {
-      screen: 'Home',
-    });
-  }
+  if (route.params?.pedidoId == null) {
+  return (
+    <View style={styles.container}>
+      <View style={styles.avisoContainer}>
+        <Text style={styles.avisoTitulo}>
+          Pedido não encontrado
+        </Text>
+
+        <Text style={styles.avisoMensagem}>
+          Não foi possível identificar o pedido.
+          Volte ao início para continuar.
+        </Text>
+
+        <TouchableOpacity
+          style={styles.botaoInicio}
+          onPress={voltarInicio}
+        >
+          <Text style={styles.textoBotaoInicio}>
+            Voltar ao Início
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
 
   return (
     <ScrollView
@@ -283,4 +303,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
+
+  avisoContainer: {
+  flex: 1,
+  justifyContent: 'center',
+  padding: 24,
+  },
+
+  avisoTitulo: {
+  fontSize: 22,
+  fontWeight: '700',
+  color: cores.texto,
+  textAlign: 'center',
+  marginBottom: 12,
+  },
+
+  avisoMensagem: {
+  fontSize: 15,
+  color: cores.textoSecundario,
+  textAlign: 'center',
+  lineHeight: 22,
+  marginBottom: 24,
+  },
+
 });
