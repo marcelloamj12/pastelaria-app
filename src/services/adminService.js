@@ -100,7 +100,10 @@ export async function listarItensPedidosAdmin() {
       preco_unitario,
       subtotal,
       observacao,
-      criado_em
+      criado_em,
+      pedidos (
+      numero
+      )
     `)
     .order('criado_em', { ascending: false });
 

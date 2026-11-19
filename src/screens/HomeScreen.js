@@ -1,15 +1,5 @@
-
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import {
-  View,
-  Text,
-  Button,
-  StyleSheet,
-  Alert,
-  TouchableOpacity,
-  Image,
-  ScrollView,
-} from 'react-native';
+import { View, Text, Button, StyleSheet, Alert, TouchableOpacity, Image, ScrollView, Platform } from 'react-native';
 
 import { fazerLogout } from '../services/authService';
 import {
@@ -25,6 +15,7 @@ import {
   imagensProdutos,
 } from '../assets/imageMappings';
 import { useFocusEffect } from '@react-navigation/native';
+import { NavigationBar } from 'expo-navigation-bar';
 
 export default function HomeScreen({ navigation }) {
   const scrollRef = useRef(null);
@@ -52,6 +43,38 @@ export default function HomeScreen({ navigation }) {
     carregando: carregandoAuth,
     erroPerfil,
   } = useAuth();
+
+// ocultar a barra do celular na home
+useEffect(() => {
+  if (Platform.OS !== 'android') return;
+
+  const ocultarBarra = () => {
+    NavigationBar.setHidden(true);
+  };
+
+  const mostrarBarra = () => {
+    NavigationBar.setHidden(false);
+  };
+
+  const unsubscribeFocus = navigation.addListener(
+    'focus',
+    ocultarBarra
+  );
+
+  const unsubscribeBlur = navigation.addListener(
+    'blur',
+    mostrarBarra
+  );
+
+  ocultarBarra();
+
+  return () => {
+    unsubscribeFocus();
+    unsubscribeBlur();
+    mostrarBarra();
+  };
+}, [navigation]);
+
 
   useEffect(() => {
     async function carregarDestaques() {
@@ -520,77 +543,54 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  // Administração
+  identificacaoAdmin: {
+  color: '#15803D',
+  fontSize: 16,
+  fontWeight: 'bold',
+  marginBottom: 15,
+},
 
-  botaoAdmin: {
-    backgroundColor: '#2563EB',
-    padding: 10,
-    borderRadius: 4,
-    alignItems: 'center',
-  },
+acessoAdminContainer: {
+  marginTop: 100,
+  marginBottom: 20,
+  alignItems: 'center',
+},
 
-  textoBotaoAdmin: {
-    color: '#f5f3f3',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+acessoAdminTexto: {
+  fontSize: 8,
+  color: '#888',
+  textDecorationLine: 'underline',
+},
 
-  acessoAdminContainer: {
-    marginTop: 100,
-    alignItems: 'center',
-  },
+ botaoAdmin: {
+  backgroundColor: '#2563EB',
+  padding: 10,
+  borderRadius: 4 ,
+  alignItems: 'center',
+}, 
 
-  acessoAdminTexto: {
-    fontSize: 8,
-    color: '#888',
-    textDecorationLine: 'underline',
-  },
+textoBotaoAdmin: {
+  color: '#f5f3f3',
+  fontSize: 16,
+  fontWeight: 'bold',
+},
 
-  espaco: {
-    height: 15,
-  },
+// place holder
+botaoAcompanhar: {
+  backgroundColor: cores.branco,
+  borderWidth: 1,
+  borderColor: cores.primaria,
+  paddingVertical: 15,
+  paddingHorizontal: 20,
+  borderRadius: 12,
+  alignItems: 'center',
+  marginTop: 12,
+},
 
-  mensagemErro: {
-    color: '#B91C1C',
-    backgroundColor: '#FEF2F2',
-    padding: 12,
-    borderRadius: 10,
-    fontSize: 14,
-    lineHeight: 20,
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-
-  botaoTentarNovamente: {
-    backgroundColor: cores.primaria,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginBottom: 14,
-  },
-
-  textoTentarNovamente: {
-    color: cores.branco,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-
-  botaoAcompanhar: {
-    backgroundColor: cores.branco,
-    borderWidth: 1,
-    borderColor: cores.primaria,
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 12,
-  },
-
-  textoBotaoAcompanhar: {
-    color: cores.primaria,
-    fontSize: 16,
-    fontWeight: '700',
-  },
+textoBotaoAcompanhar: {
+  color: cores.primaria,
+  fontSize: 16,
+  fontWeight: '700',
+},
 
 });

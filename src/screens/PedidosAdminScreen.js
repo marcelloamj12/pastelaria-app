@@ -135,6 +135,12 @@ export default function PedidosAdminScreen() {
             <Text>Tipo: {pedido.tipo}</Text>
             <Text>Pagamento: {pedido.pagamento}</Text>
 
+                        {pedido.tipo === 'entrega' && (
+              <Text>
+                  Endereço de entrega: {pedido.endereco_entrega || 'Não informado'}
+              </Text>
+              )}
+                        
             <Text>
               Total: R$ {Number(pedido.total).toFixed(2)}
             </Text>

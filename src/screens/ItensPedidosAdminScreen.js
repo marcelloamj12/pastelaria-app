@@ -18,6 +18,22 @@ export default function ItensPedidosAdminScreen() {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
 
+  // agrupa os itens de cada pedido 
+  const pedidosAgrupados = itens.reduce((grupos, item) => {
+  const pedidoId = item.pedido_id;
+
+  if (!grupos[pedidoId]) {
+    grupos[pedidoId] = {
+      numero: item.pedidos?.numero,
+      itens: [],
+    };
+  }
+
+  grupos[pedidoId].itens.push(item);
+
+  return grupos;
+}, {});
+
   useEffect(() => {
     async function carregarItens() {
       try {
@@ -59,29 +75,36 @@ export default function ItensPedidosAdminScreen() {
       {itens.length === 0 ? (
         <Text>Nenhum item cadastrado.</Text>
       ) : (
-        itens.map((item) => (
-          <View key={item.id} style={styles.item}>
-            <Text style={styles.nome}>
-              {item.nome_produto}
-            </Text>
+        Object.entries(pedidosAgrupados).map(([pedidoId, grupo]) => (
+    <View key={pedidoId} style={styles.pedido}>
+      <Text style={styles.tituloPedido}>
+        Pedido #{grupo.numero || pedidoId}
+      </Text>
 
-            <Text>Pedido: {item.pedido_id}</Text>
-            <Text>Quantidade: {item.quantidade}</Text>
+      {grupo.itens.map((item) => (
+        <View key={item.id} style={styles.item}>
+          <Text style={styles.nome}>
+            {item.nome_produto}
+          </Text>
 
-            <Text>
-              Preço unitário: R$ {Number(item.preco_unitario).toFixed(2)}
-            </Text>
+          <Text>Quantidade: {item.quantidade}</Text>
 
-            <Text>
-              Subtotal: R$ {Number(item.subtotal).toFixed(2)}
-            </Text>
+          <Text>
+            Preço unitário: R$ {Number(item.preco_unitario).toFixed(2)}
+          </Text>
 
-            <Text>
-              Observação: {item.observacao || 'Nenhuma'}
-            </Text>
-          </View>
-        ))
-      )}
+          <Text>
+            Subtotal: R$ {Number(item.subtotal).toFixed(2)}
+          </Text>
+
+          <Text>
+            Observação: {item.observacao || 'Nenhuma'}
+          </Text>
+        </View>
+      ))}
+    </View>
+  ))
+)}    
     </ScrollView>
   );
 }
@@ -111,6 +134,20 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 8,
   },
+
+  pedido: {
+  padding: 15,
+  marginBottom: 20,
+  borderWidth: 2,
+  borderColor: '#2563EB',
+  borderRadius: 10,
+},
+
+tituloPedido: {
+  fontSize: 20,
+  fontWeight: 'bold',
+  marginBottom: 12,
+},
 
   erro: {
     color: 'red',
