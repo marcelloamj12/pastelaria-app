@@ -201,6 +201,40 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
 
+  listaStatus: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  gap: 10,
+  marginTop: 15,
+},
+
+opcaoStatus: {
+  backgroundColor: '#E5E7EB',
+  borderWidth: 1,
+  borderColor: '#9CA3AF',
+  paddingVertical: 10,
+  paddingHorizontal: 14,
+  borderRadius: 8,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+statusSelecionado: {
+  backgroundColor: '#2563EB',
+  borderColor: '#2563EB',
+},
+
+textoStatus: {
+  color: '#374151',
+  fontSize: 14,
+  fontWeight: '600',
+},
+
+textoStatusSelecionado: {
+  color: '#FFFFFF',
+  fontWeight: 'bold',
+},
+
   erro: {
     color: 'red',
   },

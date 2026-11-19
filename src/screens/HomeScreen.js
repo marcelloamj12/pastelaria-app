@@ -186,6 +186,9 @@ async function sairDaConta() {
 )}
 
 
+{!carregandoAuth && perfil?.role !== 'admin' && (
+  <>
+
       <TouchableOpacity
   style={styles.botaoCardapio}
   onPress={() => navigation.navigate('Cardapio')}
@@ -206,6 +209,9 @@ async function sairDaConta() {
     Acompanhar Pedido
   </Text>
 </TouchableOpacity>
+
+</>
+)}
 
       {!carregandoAuth && sessao && perfil?.role === 'admin' && (
 
