@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, Alert, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { View, Text, Button, StyleSheet, Alert, TouchableOpacity, Image, ScrollView, Platform } from 'react-native';
 
 import { fazerLogout } from '../services/authService';
 import { listarCategorias, listarDestaques, formatarPreco } from '../services/cardapioService';
 import { useAuth } from '../context/AuthContext';
 import { cores } from '../theme/theme';
+import { NavigationBar } from 'expo-navigation-bar';
 
 export default function HomeScreen({ navigation }) {
   const [destaques, setDestaques] = useState([]);
@@ -18,6 +19,38 @@ const {
   carregando: carregandoAuth,
   erroPerfil,
 } = useAuth();
+
+
+// ocultar a barra do celular na home
+useEffect(() => {
+  if (Platform.OS !== 'android') return;
+
+  const ocultarBarra = () => {
+    NavigationBar.setHidden(true);
+  };
+
+  const mostrarBarra = () => {
+    NavigationBar.setHidden(false);
+  };
+
+  const unsubscribeFocus = navigation.addListener(
+    'focus',
+    ocultarBarra
+  );
+
+  const unsubscribeBlur = navigation.addListener(
+    'blur',
+    mostrarBarra
+  );
+
+  ocultarBarra();
+
+  return () => {
+    unsubscribeFocus();
+    unsubscribeBlur();
+    mostrarBarra();
+  };
+}, [navigation]);
 
 
   useEffect(() => {
@@ -423,6 +456,7 @@ conteudo: {
 
 acessoAdminContainer: {
   marginTop: 100,
+  marginBottom: 20,
   alignItems: 'center',
 },
 
