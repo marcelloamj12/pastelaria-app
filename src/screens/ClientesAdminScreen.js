@@ -10,6 +10,7 @@
 //   - busca por nome ou telefone
 //   - para cada cliente: telefone, e-mail, desde quando é cliente,
 //     quantos pedidos fez, quanto já gastou e a data do último pedido
+//   - botão "Sair" no topo, que encerra a sessão do admin
 //
 // De onde vêm os dados: dos serviços do Nicolas (adminService).
 //   listarClientesAdmin()  -> tabela clientes
@@ -23,7 +24,7 @@
 // Erros aparecem dentro da tela (o Alert.alert não funciona na web).
 // =====================================================================
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -39,6 +40,7 @@ import {
   listarClientesAdmin,
   listarPedidosAdmin,
 } from '../services/adminService';
+import { fazerLogout } from '../services/authService';
 import { cores, bordas } from '../theme/theme';
 
 // ---------------------------------------------------------------------
@@ -76,7 +78,7 @@ function formatarDinheiro(valor) {
 function normalizar(texto = '') {
   return String(texto)
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .trim();
 }
@@ -178,6 +180,42 @@ export default function ClientesAdminScreen({ navigation }) {
   const [atualizando, setAtualizando] = useState(false);
   const [erro, setErro] = useState('');
   const [semPermissao, setSemPermissao] = useState(false);
+  const [saindo, setSaindo] = useState(false);
+
+  // Encerra a sessão do admin e volta para a Home, limpando o histórico
+  // para o "voltar" não reabrir o painel.
+  const sair = useCallback(async () => {
+    if (saindo) return;
+    setSaindo(true);
+    try {
+      await fazerLogout();
+      navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+    } catch (e) {
+      setErro('Não foi possível sair agora. Tente de novo.');
+      setSaindo(false);
+    }
+  }, [navigation, saindo]);
+
+  // Botão "Sair" no canto direito do cabeçalho
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable
+          onPress={sair}
+          disabled={saindo}
+          style={({ pressed }) => [styles.botaoSair, pressed && styles.botaoSairPressionado]}
+          accessibilityRole="button"
+          accessibilityLabel="Sair da conta de administrador"
+        >
+          {saindo ? (
+            <ActivityIndicator size="small" color={cores.primaria} />
+          ) : (
+            <Text style={styles.textoSair}>Sair</Text>
+          )}
+        </Pressable>
+      ),
+    });
+  }, [navigation, sair, saindo]);
 
   const carregar = useCallback(async () => {
     setErro('');
@@ -600,6 +638,27 @@ const styles = StyleSheet.create({
   textoAviso: {
     fontSize: 14,
     color: cores.texto,
+  },
+
+  // Botão Sair do cabeçalho
+  botaoSair: {
+    minWidth: 64,
+    minHeight: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: cores.primaria,
+    borderRadius: bordas.pequena,
+  },
+  botaoSairPressionado: {
+    backgroundColor: cores.cinzaClaro,
+  },
+  textoSair: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: cores.primaria,
   },
 
   // Botão principal
