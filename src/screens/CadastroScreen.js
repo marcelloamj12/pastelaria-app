@@ -1,7 +1,8 @@
 
 
-// tela place holder de login para teste, a tela original sera feita posteriormente
+// tela de cadastro (atualmente nao utilizando, mas esta aqui para futuras implementações)
 
+/*
 import React, { useState } from 'react';
 import {
   View,
@@ -128,3 +129,5 @@ const styles = StyleSheet.create({
     height: 15,
   },
 });
+
+*/

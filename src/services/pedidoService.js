@@ -13,6 +13,9 @@
 // =====================================================================
 
 import { supabase } from '../lib/supabase';
+import {
+  buscarHistoricoAcompanhamento,
+} from './acompanhamentoPedidoStorage'; 
 
 /** Rótulos de status para exibir na tela de Pedidos. */
 export const STATUS_PEDIDO = {
@@ -82,8 +85,18 @@ export async function criarPedido({
  */
 export async function listarPedidosPorTelefone(telefone) {
   const somenteNumeros = (telefone ?? '').replace(/\D/g, '');
-  if (somenteNumeros.length < 10) return [];
+  if (somenteNumeros.length < 10 || somenteNumeros.length > 11) {
+    return []; 
+  }
 
+ // app chama funçao em vez de consulta direta
+
+  const { data, error } = await supabase.rpc('meus_pedidos', {
+    p_telefone: somenteNumeros,
+  });
+
+
+  /*
   const { data: cliente, error: erroCliente } = await supabase
     .from('clientes')
     .select('id')
@@ -101,13 +114,41 @@ export async function listarPedidosPorTelefone(telefone) {
     `)
     .eq('cliente_id', cliente.id)
     .order('criado_em', { ascending: false });
+*/
 
   if (error) throw new Error(`Não foi possível carregar seus pedidos: ${error.message}`);
   return data ?? [];
 }
 
+
+// funçao sendo chamada
+
+export async function buscarPedido(pedidoId, telefone) {
+  if (!pedidoId) {
+    throw new Error('Pedido não informado.');
+  }
+
+  const somenteNumeros = (telefone ?? '').replace(/\D/g, '');
+
+  if (somenteNumeros.length < 10 || somenteNumeros.length > 11) {
+    throw new Error('Telefone inválido.');
+  }
+
+  const { data, error } = await supabase.rpc('buscar_meu_pedido', {
+    p_pedido_id: pedidoId,
+    p_telefone: somenteNumeros,
+  });
+
+  if (error) {
+    throw new Error(`Não foi possível consultar o pedido: ${error.message}`);
+  }
+
+  return data;
+}
+
 /** Um pedido específico, com todos os itens. */
-export async function buscarPedido(pedidoId) {
+
+/* export async function buscarPedido(pedidoId) {
   const { data, error } = await supabase
     .from('pedidos')
     .select(`
@@ -121,7 +162,7 @@ export async function buscarPedido(pedidoId) {
 
   if (error) throw new Error(error.message);
   return data;
-}
+} */
 
 /**
  * Acompanha o status do pedido em tempo real (Supabase Realtime).
@@ -135,6 +176,38 @@ export async function buscarPedido(pedidoId) {
  * Requisito: ativar Realtime na tabela pedidos
  * (Supabase > Database > Replication > pedidos).
  */
+
+    /**
+ * Busca o histórico de pedidos salvos no dispositivo.
+ * Recupera os detalhes de cada pedido pelo serviço existente.
+ */
+export async function buscarHistoricoPedidos() {
+  const historico = await buscarHistoricoAcompanhamento();
+
+  if (!historico.length) {
+    return [];
+  }
+
+  // Consulta todos os pedidos sem deixar uma falha interromper as demais.
+  const resultados = await Promise.allSettled(
+    historico.map(({ pedidoId, telefone }) =>
+      buscarPedido(pedidoId, telefone)
+    )
+  );
+
+  // Mantém somente os pedidos consultados com sucesso.
+  const pedidos = resultados
+    .filter((resultado) => resultado.status === 'fulfilled')
+    .map((resultado) => resultado.value)
+    .filter((pedido) => pedido);
+
+  // Organiza os pedidos do mais recente para o mais antigo.
+  return pedidos.sort(
+    (a, b) =>
+      new Date(b.criado_em) - new Date(a.criado_em)
+  );
+}
+
 export function acompanharPedido(pedidoId, aoAtualizar) {
   const canal = supabase
     .channel(`pedido:${pedidoId}`)

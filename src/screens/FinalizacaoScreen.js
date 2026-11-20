@@ -8,11 +8,12 @@ import {
   ScrollView,
   StyleSheet,
   Alert,
-  Platform
+  Platform,
 } from 'react-native';
 
 import { useCarrinho } from '../context/CarrinhoContext';
 import { criarPedido } from '../services/pedidoService';
+import { salvarPedidoAcompanhamento } from '../services/acompanhamentoPedidoStorage';
 import { cores } from '../theme/theme';
 
 export default function FinalizacaoScreen({ navigation }) {
@@ -69,20 +70,36 @@ export default function FinalizacaoScreen({ navigation }) {
       const pedido = await criarPedido({
         nome: nome.trim(),
         telefone: telefone.trim(),
-        itens: itens.map(item => ({
+        itens: itens.map((item) => ({
           produto_id: item.id,
           quantidade: item.quantidade,
-          observacao: null
+          observacao: item.observacao?.trim() || null,
         })),
         tipo,
         pagamento,
         endereco: tipo === 'entrega' ? endereco.trim() : null,
         observacoes: observacoes.trim() || null,
-        taxaEntrega: 0
+        taxaEntrega: 0,
       });
 
       if (!pedido?.pedido_id) {
-        throw new Error('O banco não retornou o identificador do pedido.');
+        throw new Error(
+          'O banco não retornou o identificador do pedido.'
+        );
+      }
+
+      // Salva o pedido no dispositivo para acompanhamento.
+      // Uma falha no armazenamento não impede a confirmação.
+      try {
+        await salvarPedidoAcompanhamento(
+          pedido.pedido_id,
+          telefone
+        );
+      } catch (erroStorage) {
+        console.error(
+          'Pedido criado, mas não foi possível salvar o acompanhamento:',
+          erroStorage
+        );
       }
 
       limparCarrinho();
@@ -91,12 +108,15 @@ export default function FinalizacaoScreen({ navigation }) {
         pedidoId: pedido.pedido_id,
         numero: pedido.numero,
         total: pedido.total,
-        status: pedido.status
+        status: pedido.status,
       });
-
     } catch (error) {
+      console.error('Erro ao finalizar pedido:', error);
+
       mostrarAviso(
-        'Erro ao realizar pedido: ' + (error.message || 'Tente novamente.')
+        'Não foi possível confirmar seu pedido no momento. ' +
+        'Verifique sua conexão e tente novamente. ' +
+        'Se o problema continuar, entre em contato com a loja antes de enviar outro pedido.'
       );
     } finally {
       setCarregando(false);
@@ -109,14 +129,17 @@ export default function FinalizacaoScreen({ navigation }) {
         key={valor}
         style={[
           styles.opcao,
-          selecionado === valor && styles.opcaoSelecionada
+          selecionado === valor && styles.opcaoSelecionada,
         ]}
         onPress={() => alterar(valor)}
+        disabled={carregando}
       >
-        <Text style={[
-          styles.textoOpcao,
-          selecionado === valor && styles.textoSelecionado
-        ]}>
+        <Text
+          style={[
+            styles.textoOpcao,
+            selecionado === valor && styles.textoSelecionado,
+          ]}
+        >
           {titulo}
         </Text>
       </TouchableOpacity>
@@ -140,6 +163,7 @@ export default function FinalizacaoScreen({ navigation }) {
           placeholder="Digite seu nome"
           value={nome}
           onChangeText={setNome}
+          editable={!carregando}
         />
 
         <Text style={styles.label}>Telefone</Text>
@@ -149,6 +173,7 @@ export default function FinalizacaoScreen({ navigation }) {
           keyboardType="phone-pad"
           value={telefone}
           onChangeText={setTelefone}
+          editable={!carregando}
         />
 
         <Text style={styles.label}>Tipo de pedido</Text>
@@ -166,6 +191,7 @@ export default function FinalizacaoScreen({ navigation }) {
               placeholder="Rua, número, bairro e complemento"
               value={endereco}
               onChangeText={setEndereco}
+              editable={!carregando}
               multiline
             />
           </>
@@ -191,6 +217,7 @@ export default function FinalizacaoScreen({ navigation }) {
           placeholder="Alguma observação sobre o pedido?"
           value={observacoes}
           onChangeText={setObservacoes}
+          editable={!carregando}
           multiline
         />
       </View>
@@ -201,23 +228,43 @@ export default function FinalizacaoScreen({ navigation }) {
         {itens.length === 0 ? (
           <Text>Seu carrinho está vazio.</Text>
         ) : (
-          itens.map(item => (
-            <View key={String(item.id)} style={styles.produto}>
+          itens.map((item) => (
+            <View
+              key={String(item.chave ?? item.id)}
+              style={styles.produto}
+            >
               <View style={styles.produtoInfo}>
-                <Text style={styles.nomeProduto}>{item.nome}</Text>
+                <Text style={styles.nomeProduto}>
+                  {item.nome}
+                </Text>
+
                 <Text>Quantidade: {item.quantidade}</Text>
-                <Text>Unitário: R$ {formatarPreco(item.preco)}</Text>
+
+                {Boolean(item.observacao) && (
+                  <Text style={styles.observacaoProduto}>
+                    Observações: {item.observacao}
+                  </Text>
+                )}
+
+                <Text>
+                  Unitário: R$ {formatarPreco(item.preco)}
+                </Text>
               </View>
 
               <Text style={styles.subtotal}>
-                R$ {formatarPreco(item.preco * item.quantidade)}
+                R$ {formatarPreco(
+                  item.preco * item.quantidade
+                )}
               </Text>
             </View>
           ))
         )}
 
         <View style={styles.linhaTotal}>
-          <Text style={styles.totalLabel}>Total estimado</Text>
+          <Text style={styles.totalLabel}>
+            Total estimado
+          </Text>
+
           <Text style={styles.totalValor}>
             R$ {formatarPreco(total)}
           </Text>
@@ -231,159 +278,203 @@ export default function FinalizacaoScreen({ navigation }) {
       <TouchableOpacity
         style={[
           styles.botaoConfirmar,
-          (carregando || itens.length === 0) && styles.desabilitado
+          (carregando || itens.length === 0) &&
+            styles.desabilitado,
         ]}
         onPress={confirmarPedido}
         disabled={carregando || itens.length === 0}
       >
         <Text style={styles.textoBotao}>
-          {carregando ? 'Enviando pedido...' : 'Confirmar Pedido'}
+          {carregando
+            ? 'Enviando pedido...'
+            : 'Confirmar Pedido'}
         </Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.botaoVoltar}
         onPress={() => navigation.goBack()}
+        disabled={carregando}
       >
-        <Text style={styles.textoVoltar}>Voltar ao Carrinho</Text>
+        <Text style={styles.textoVoltar}>
+          Voltar ao Carrinho
+        </Text>
       </TouchableOpacity>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  observacaoProduto: {
+    fontSize: 13,
+    color: '#666666',
+    marginTop: 5,
+    marginBottom: 5,
+    flexShrink: 1,
+  },
+
   container: {
     flex: 1,
-    backgroundColor: cores.fundo
+    backgroundColor: cores.fundo,
   },
+
   conteudo: {
-    padding: 20,
-    paddingBottom: 40
+    padding: 16,
+    paddingBottom: 30,
   },
+
   titulo: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#222'
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 16,
+    color: cores.texto,
   },
+
   card: {
-    backgroundColor: '#fff',
-    padding: 18,
+    backgroundColor: cores.branco,
+    padding: 16,
     borderRadius: 12,
-    marginBottom: 20,
-    elevation: 2
+    marginBottom: 14,
+    elevation: 2,
   },
+
   subtitulo: {
-    fontSize: 21,
-    fontWeight: 'bold',
-    marginBottom: 18,
-    color: '#333'
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 14,
+    color: cores.texto,
   },
+
   label: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
-    marginBottom: 7,
-    color: '#444'
+    marginBottom: 6,
+    color: cores.texto,
   },
+
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: cores.borda,
     borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    marginBottom: 16,
-    backgroundColor: '#fafafa'
+    padding: 11,
+    fontSize: 14,
+    marginBottom: 12,
+    backgroundColor: '#FAFAFA',
   },
+
   endereco: {
-    minHeight: 75,
-    textAlignVertical: 'top'
+    minHeight: 70,
+    textAlignVertical: 'top',
   },
+
   opcoes: {
     flexDirection: 'row',
-    marginBottom: 15
+    marginBottom: 10,
   },
+
   opcao: {
     flex: 1,
-    padding: 12,
+    padding: 11,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: cores.borda,
     alignItems: 'center',
     borderRadius: 8,
-    marginRight: 6
+    marginRight: 6,
   },
+
   opcaoSelecionada: {
     backgroundColor: cores.primaria,
-    borderColor: cores.primaria
+    borderColor: cores.primaria,
   },
+
   textoOpcao: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333'
+    color: '#333333',
   },
+
   textoSelecionado: {
-    color: '#fff'
+    color: '#FFFFFF',
   },
+
   produto: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-    paddingVertical: 12
+    borderBottomColor: '#EEEEEE',
+    paddingVertical: 12,
   },
+
   produtoInfo: {
-    flex: 1
+    flex: 1,
   },
+
   nomeProduto: {
     fontSize: 17,
-    fontWeight: 'bold'
+    fontWeight: '700',
   },
+
   subtotal: {
     fontSize: 16,
-    fontWeight: 'bold'
+    fontWeight: '700',
   },
+
   linhaTotal: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 20,
     paddingTop: 15,
     borderTopWidth: 2,
-    borderTopColor: '#eee'
+    borderTopColor: '#EEEEEE',
   },
+
   totalLabel: {
     fontSize: 18,
-    fontWeight: 'bold'
+    fontWeight: '700',
   },
+
   totalValor: {
     fontSize: 22,
-    fontWeight: 'bold',
-    color: cores.primaria
+    fontWeight: '700',
+    color: cores.primaria,
   },
+
   aviso: {
     fontSize: 12,
-    color: '#777',
-    marginTop: 8
+    color: '#777777',
+    marginTop: 8,
   },
+
   botaoConfirmar: {
     backgroundColor: cores.primaria,
     padding: 17,
     borderRadius: 10,
-    alignItems: 'center'
+    alignItems: 'center',
   },
+
   desabilitado: {
-    backgroundColor: '#aaa'
+    backgroundColor: '#AAAAAA',
   },
+
   textoBotao: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 17,
-    fontWeight: 'bold'
+    fontWeight: '700',
   },
+
   botaoVoltar: {
-    marginTop: 15,
-    padding: 15,
-    alignItems: 'center'
+    marginTop: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: cores.primaria,
+    backgroundColor: cores.branco,
+    borderRadius: 10,
   },
+
   textoVoltar: {
-    color: '#444',
-    fontSize: 16
-  }
+    color: cores.primaria,
+    fontSize: 15,
+    fontWeight: '600',
+  },
 });

@@ -1,23 +1,79 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, Alert, TouchableOpacity, Image, ScrollView } from 'react-native';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { View, Text, Button, StyleSheet, Alert, TouchableOpacity, Image, ScrollView, Platform } from 'react-native';
 
 import { fazerLogout } from '../services/authService';
-import { listarCategorias, listarDestaques, formatarPreco } from '../services/cardapioService';
+import {
+  listarCategorias,
+  listarDestaques,
+  formatarPreco,
+} from '../services/cardapioService';
 import { useAuth } from '../context/AuthContext';
 import { cores } from '../theme/theme';
+import {
+  bannerHome,
+  imagensCategorias,
+  imagensProdutos,
+} from '../assets/imageMappings';
+import { useFocusEffect } from '@react-navigation/native';
+import { NavigationBar } from 'expo-navigation-bar';
 
 export default function HomeScreen({ navigation }) {
+  const scrollRef = useRef(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      scrollRef.current?.scrollTo({
+        y: 0,
+        animated: false,
+      });
+    }, [])
+  );
+
   const [destaques, setDestaques] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
   const [categorias, setCategorias] = useState([]);
+  const [carregandoCategorias, setCarregandoCategorias] = useState(true);
+  const [erroCategorias, setErroCategorias] = useState(null);
+  const [tentativa, setTentativa] = useState(0);
 
-const {
-  sessao,
-  perfil,
-  carregando: carregandoAuth,
-  erroPerfil,
-} = useAuth();
+  const {
+    sessao,
+    perfil,
+    carregando: carregandoAuth,
+    erroPerfil,
+  } = useAuth();
+
+// ocultar a barra do celular na home
+useEffect(() => {
+  if (Platform.OS !== 'android') return;
+
+  const ocultarBarra = () => {
+    NavigationBar.setHidden(true);
+  };
+
+  const mostrarBarra = () => {
+    NavigationBar.setHidden(false);
+  };
+
+  const unsubscribeFocus = navigation.addListener(
+    'focus',
+    ocultarBarra
+  );
+
+  const unsubscribeBlur = navigation.addListener(
+    'blur',
+    mostrarBarra
+  );
+
+  ocultarBarra();
+
+  return () => {
+    unsubscribeFocus();
+    unsubscribeBlur();
+    mostrarBarra();
+  };
+}, [navigation]);
 
 
   useEffect(() => {
@@ -26,283 +82,318 @@ const {
         setCarregando(true);
         setErro(null);
 
-        const dados = await listarDestaques();
+const dados = await listarDestaques();
         setDestaques(dados);
       } catch (e) {
-        setErro(e.message);
-      } finally {
-        setCarregando(false);
-      }
+  console.error('Erro ao carregar destaques:', e);
+
+  setErro(
+    'Não foi possível carregar os produtos no momento. ' +
+    'Verifique sua conexão e tente novamente.'
+  );
+} finally {
+  setCarregando(false);
+}
     }
 
-        carregarDestaques();
+    carregarDestaques();
 
     async function carregarCategorias() {
-      try {
-        const dados = await listarCategorias();
-        setCategorias(dados);
-      } catch (error) {
-        console.error('Erro ao carregar categorias:', error.message);
-      }
-    }
-
-    carregarCategorias();
-  }, []);
-
-
-async function sairDaConta() {
   try {
-    await fazerLogout();
+    setCarregandoCategorias(true);
+    setErroCategorias(null);
 
-    Alert.alert(
-      'Logout realizado',
-      'Você saiu da sua conta com sucesso.'
-    );
+    const dados = await listarCategorias();
+    setCategorias(dados);
   } catch (error) {
-    Alert.alert('Erro ao sair da conta', error.message);
+    console.error('Erro ao carregar categorias:', error);
+
+    setErroCategorias(
+      'Não foi possível carregar as categorias no momento. ' +
+      'Verifique sua conexão e tente novamente.'
+    );
+  } finally {
+    setCarregandoCategorias(false);
   }
 }
 
+        carregarCategorias();
+  }, [tentativa]);
+
+  async function sairDaConta() {
+    try {
+      await fazerLogout();
+
+      Alert.alert(
+        'Logout realizado',
+        'Você saiu da sua conta com sucesso.'
+      );
+    } catch (error) {
+      Alert.alert('Erro ao sair da conta', error.message);
+    }
+  }
+
   return (
-  <ScrollView
-    style={styles.container}
-    contentContainerStyle={styles.conteudo}
-  >
-    <View style={styles.cabecalho}>
-      <Image
-        source={require('../assets/logo.png')}
-        style={styles.logo}
-        resizeMode="contain"
-      />
-    </View>
-    {carregandoAuth ? (
-  <Text>Carregando sua conta...</Text>
-   ) : sessao ? (
-  <Text style={styles.subtitulo}>
-    Bem-vindo, {perfil?.nome || 'usuário'}!
-  </Text>
-   ) : (
-  <Text style={styles.subtitulo}>
-    Bem-vindo!
-  </Text>
-   )}
+    <ScrollView
+      ref={scrollRef}
+      style={styles.container}
+      contentContainerStyle={styles.conteudo}
+    >
+      {/* Mensagens relacionadas à autenticação */}
+      {erroPerfil && (
+        <Text>
+          Não foi possível carregar seu perfil: {erroPerfil}
+        </Text>
+      )}
 
-    {erroPerfil && (
-  <Text>
-    Não foi possível carregar seu perfil: {erroPerfil}
-  </Text>
-   )}
+      {!carregandoAuth &&
+        sessao &&
+        perfil?.role === 'admin' && (
+          <Text style={styles.identificacaoAdmin}>
+            ADMINISTRADOR
+          </Text>
+        )}
 
-   {!carregandoAuth && sessao && perfil?.role === 'admin' && (
-  <Text style={styles.identificacaoAdmin}>
-    ADMINISTRADOR
-  </Text>
+      {/* Banner principal */}
+      <View style={styles.banner}>
+        <View style={styles.bannerConteudo}>
+          <Text style={styles.bannerTitulo}>
+            Pastéis fritos na hora
+          </Text>
+
+          <Text style={styles.bannerDescricao}>
+            Sabor e qualidade em cada pedido
+          </Text>
+        </View>
+
+        <Image
+          source={bannerHome}
+          style={styles.bannerImagem}
+          resizeMode="contain"
+        />
+      </View>
+
+      {perfil?.role !== 'admin' && (
+        <>
+          {/* Categorias */}
+          <Text style={styles.categoriasTitulo}>
+            Categorias
+          </Text>
+
+          {carregandoCategorias && (
+  <Text>Carregando categorias...</Text>
 )}
 
-
-      <Text style={styles.titulo}>Menu Digital</Text>
-
-
-<View style={styles.banner}>
-  <View style={styles.bannerConteudo}>
-    <Text style={styles.bannerTitulo}>
-      Pastéis fritos na hora
+{erroCategorias && (
+  <View>
+    <Text style={styles.mensagemErro}>
+      {erroCategorias}
     </Text>
 
-    <Text style={styles.bannerDescricao}>
-      Sabor e qualidade em cada pedido
-    </Text>
-  </View>
-
-  <Text style={styles.bannerEmoji}>🥟</Text>
-</View>
-
-
-    {perfil?.role !== 'admin' && (
-      <>
-
-<Text style={styles.categoriasTitulo}>Categorias</Text>
-
-<View style={styles.categoriasContainer}>
-  {categorias.map((categoria) => (
     <TouchableOpacity
-      key={categoria.id}
-      style={styles.categoriaBotao}
-      onPress={() =>
-        navigation.navigate('Cardapio', {
-          categoriaSlug: categoria.slug,
-        })
-      }
+      style={styles.botaoTentarNovamente}
+      onPress={() => setTentativa((valor) => valor + 1)}
     >
-      <Text style={styles.categoriaTexto}>
-        {categoria.nome}
+      <Text style={styles.textoTentarNovamente}>
+        Tentar novamente
       </Text>
     </TouchableOpacity>
-  ))}
-</View>
-
-      <Text style={styles.subtitulo}>Mais pedidos</Text>
-
-      {carregando && (
-        <Text>Carregando destaques...</Text>
-      )}
-
-      {erro && (
-        <Text>Erro ao carregar os destaques: {erro}</Text>
-      )}
-
-      {!carregando && !erro && destaques.map((produto) => (
-        <View
-          key={produto.id}
-          style={styles.produto}
-        >
-          <Text style={styles.nomeProduto}>
-            {produto.nome}
-          </Text>
-
-          <Text>
-            {produto.descricao}
-          </Text>
-
-          <Text style={styles.preco}>
-            {formatarPreco(produto.preco)}
-          </Text>
-
-          <TouchableOpacity
-  style={styles.botaoProduto}
-  onPress={() =>
-    navigation.navigate('Produto', {
-      produto: produto
-    })
-  }
->
-  <Text style={styles.textoBotaoProduto}>
-    Ver Produto
-  </Text>
-</TouchableOpacity>
-        </View>
-      ))}
-      </>
+  </View>
 )}
 
+<View style={styles.categoriasContainer}>
+  {!carregandoCategorias &&
+    !erroCategorias &&
+    categorias.map((categoria) => (
+              <TouchableOpacity
+                key={categoria.id}
+                style={styles.categoriaCard}
+                onPress={() =>
+                  navigation.navigate('Cardapio', {
+                    categoriaSlug: categoria.slug,
+                  })
+                }
+              >
+                <Image
+                  source={imagensCategorias[categoria.slug]}
+                  style={styles.categoriaImagem}
+                  resizeMode="cover"
+                />
 
-      <TouchableOpacity
-  style={styles.botaoCardapio}
-  onPress={() => navigation.navigate('Cardapio')}
->
-  <Text style={styles.textoBotaoCardapio}>
-    Ver Cardápio Completo
-  </Text>
-</TouchableOpacity>
+                <Text style={styles.categoriaTexto}>
+                  {categoria.nome}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
-      <View style={styles.espaco}/>
+          {/* Mais pedidos */}
+          <Text style={styles.subtitulo}>
+            Mais pedidos
+          </Text>
 
-      {!carregandoAuth && sessao && perfil?.role === 'admin' && (
+          {carregando && (
+            <Text>Carregando destaques...</Text>
+          )}
 
+          {erro && (
   <View>
-
-        <View style={styles.espaco} />
+    <Text style={styles.mensagemErro}>
+      {erro}
+    </Text>
 
     <TouchableOpacity
-  style={styles.botaoAdmin}
-  onPress={() => navigation.navigate('Admin')}
->
-  <Text style={styles.textoBotaoAdmin}>
- Painel Administrativo
-  </Text>
-</TouchableOpacity>
-
-        <View style={styles.espaco} />
-
+      style={styles.botaoTentarNovamente}
+      onPress={() => setTentativa((valor) => valor + 1)}
+    >
+      <Text style={styles.textoTentarNovamente}>
+        Tentar novamente
+      </Text>
+    </TouchableOpacity>
   </View>
+)}
+
+          <View style={styles.produtosContainer}>
+            {!carregando &&
+              !erro &&
+              destaques.map((produto) => (
+                <TouchableOpacity
+                  key={produto.id}
+                  style={styles.produto}
+                  activeOpacity={0.8}
+                  onPress={() =>
+                    navigation.navigate('Produto', {
+                      produto: produto,
+                    })
+                  }
+                >
+                  {imagensProdutos[produto.nome] ? (
+                    <Image
+                      source={imagensProdutos[produto.nome]}
+                      style={styles.produtoImagem}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View style={styles.produtoImagemVazia}>
+                      <Text style={styles.textoImagemVazia}>
+                        Sem imagem
+                      </Text>
+                    </View>
+                  )}
+
+                  <View style={styles.produtoInformacoes}>
+                    <Text
+                      style={styles.nomeProduto}
+                      numberOfLines={2}
+                    >
+                      {produto.nome}
+                    </Text>
+
+                    <Text style={styles.preco}>
+                      {formatarPreco(produto.preco)}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+          </View>
+        </>
+      )}
+
+      {/* Acesso ao cardápio completo */}
+      <TouchableOpacity
+        style={styles.botaoCardapio}
+        onPress={() =>
+          navigation.navigate('Cardapio', {
+            categoriaSlug: null,
+          })
+        }
+      >
+        <Text style={styles.textoBotaoCardapio}>
+          Ver Cardápio Completo
+        </Text>
+      </TouchableOpacity>
+{/* Acompanhar pedido */}
+{!carregandoAuth && perfil?.role !== 'admin' && (
+  <TouchableOpacity
+    style={styles.botaoAcompanhar}
+    onPress={() => navigation.navigate('MeusPedidos')}
+  >
+    <Text style={styles.textoBotaoAcompanhar}>
+      Acompanhar Pedido
+    </Text>
+  </TouchableOpacity>
 )}
 
       <View style={styles.espaco} />
 
-      {sessao ? (
-  <Button
-    title="Sair da conta"
-    onPress={sairDaConta}
-    color="red"
-  />
-) : (
+      {/* Painel administrativo */}
+      {!carregandoAuth &&
+        sessao &&
+        perfil?.role === 'admin' && (
+          <View>
+            <View style={styles.espaco} />
 
-  <TouchableOpacity
-    style={styles.acessoAdminContainer}
-    onPress={() => navigation.navigate('Login')}
-  >
-    <Text style={styles.acessoAdminTexto}>
-      Area do Dono
-    </Text>
-  </TouchableOpacity>
-)}  
-     </ScrollView>
+            <TouchableOpacity
+              style={styles.botaoAdmin}
+              onPress={() => navigation.navigate('Admin')}
+            >
+              <Text style={styles.textoBotaoAdmin}>
+                Painel Administrativo
+              </Text>
+            </TouchableOpacity>
+
+            <View style={styles.espaco} />
+          </View>
+        )}
+
+      <View style={styles.espaco} />
+
+      {/* Login e logout */}
+      {sessao ? (
+        <Button
+          title="Sair da conta"
+          onPress={sairDaConta}
+          color="red"
+        />
+      ) : (
+        <TouchableOpacity
+          style={styles.acessoAdminContainer}
+          onPress={() => navigation.navigate('Login')}
+        >
+          <Text style={styles.acessoAdminTexto}>
+            Área do Dono
+          </Text>
+        </TouchableOpacity>
+      )}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: cores.fundo,
+    padding: 20,
+  },
 
-botaoCardapio: {
-  backgroundColor: cores.primaria,
-  paddingVertical: 15,
-  paddingHorizontal: 20,
-  borderRadius: 12,
-  alignItems: 'center',
-  marginTop: 10,
-},
+  conteudo: {
+    flexGrow: 1,
+  },
 
-textoBotaoCardapio: {
-  color: cores.branco,
-  fontSize: 16,
-  fontWeight: '700',
-},
-
-botaoProduto: {
-  backgroundColor: cores.primaria,
-  paddingVertical: 12,
-  paddingHorizontal: 16,
-  borderRadius: 10,
-  alignItems: 'center',
-  marginTop: 12,
-},
-
-textoBotaoProduto: {
-  color: cores.branco,
-  fontSize: 15,
-  fontWeight: '600',
-},
-
-  categoriasTitulo: {
+  subtitulo: {
     fontSize: 22,
-    fontWeight: '700',
-    color: cores.texto,
-    marginBottom: 14,
+    fontWeight: 'bold',
+    marginBottom: 15,
   },
 
-  categoriasContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: 26,
+  identificacaoAdmin: {
+    color: '#15803D',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 15,
   },
 
-  categoriaBotao: {
-    backgroundColor: cores.branco,
-    borderWidth: 1,
-    borderColor: cores.borda,
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: 100,
-  },
-
-  categoriaTexto: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: cores.primaria,
-  },
+  // Banner
 
   banner: {
     backgroundColor: cores.secundaria,
@@ -333,69 +424,123 @@ textoBotaoProduto: {
     lineHeight: 19,
   },
 
-  bannerEmoji: {
-    fontSize: 48,
-  },
-
-  cabecalho: {
-    backgroundColor: cores.primaria,
-    height: 150,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: -20,
-    marginTop: -20,
-    marginBottom: 20,
-  },
-
-conteudo: {
-  flexGrow: 1,
-},
-
-  logo: {
-    width: 250,
+  bannerImagem: {
+    width: 130,
     height: 100,
   },
 
-  espaco: {
-  height: 15,
+  // Categorias
+
+  categoriasTitulo: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: cores.texto,
+    marginBottom: 14,
   },
 
-  container: {
-  flex: 1,
-  backgroundColor: cores.fundo,
-  padding: 20,
-},
-
-  titulo: {
-    fontSize: 30,
+  categoriasContainer: {
+    flexDirection: 'row',
+    gap: 8,
     marginBottom: 20,
   },
 
-  subtitulo: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 15,
+  categoriaCard: {
+    flex: 1,
+    minWidth: 0,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+
+  categoriaImagem: {
+    width: 60,
+    height: 60,
+    borderRadius: 10,
+    marginBottom: 6,
+  },
+
+  categoriaTexto: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: cores.texto,
+    textAlign: 'center',
+  },
+
+  // Mais pedidos - cards compactos em duas colunas
+
+  produtosContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 10,
   },
 
   produto: {
-  backgroundColor: cores.branco,
-  borderWidth: 1,
-  borderColor: cores.borda,
-  borderRadius: 16,
-  padding: 16,
-  marginBottom: 16,
-},
+    width: '48%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: cores.cinzaClaro,
+    borderRadius: 12,
+    padding: 8,
+    minHeight: 80,
+    overflow: 'hidden',
+  },
+
+  produtoImagem: {
+    width: 62,
+    height: 62,
+    borderRadius: 10,
+  },
+
+  produtoImagemVazia: {
+    width: 62,
+    height: 62,
+    borderRadius: 10,
+    backgroundColor: cores.borda,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  textoImagemVazia: {
+    fontSize: 10,
+    color: '#888888',
+    textAlign: 'center',
+  },
+
+  produtoInformacoes: {
+    flex: 1,
+    minWidth: 0,
+    paddingLeft: 8,
+    justifyContent: 'center',
+  },
 
   nomeProduto: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 5,
+    fontSize: 12,
+    fontWeight: '600',
+    color: cores.texto,
+    marginBottom: 4,
   },
 
   preco: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: cores.primaria,
+  },
+
+  // Botão do cardápio completo
+
+  botaoCardapio: {
+    backgroundColor: cores.primaria,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+
+  textoBotaoCardapio: {
+    color: cores.branco,
     fontSize: 16,
-    marginTop: 5,
-    marginBottom: 10,
+    fontWeight: '700',
   },
 
   identificacaoAdmin: {
@@ -407,6 +552,7 @@ conteudo: {
 
 acessoAdminContainer: {
   marginTop: 100,
+  marginBottom: 20,
   alignItems: 'center',
 },
 
@@ -427,6 +573,24 @@ textoBotaoAdmin: {
   color: '#f5f3f3',
   fontSize: 16,
   fontWeight: 'bold',
+},
+
+// place holder
+botaoAcompanhar: {
+  backgroundColor: cores.branco,
+  borderWidth: 1,
+  borderColor: cores.primaria,
+  paddingVertical: 15,
+  paddingHorizontal: 20,
+  borderRadius: 12,
+  alignItems: 'center',
+  marginTop: 12,
+},
+
+textoBotaoAcompanhar: {
+  color: cores.primaria,
+  fontSize: 16,
+  fontWeight: '700',
 },
 
 });
