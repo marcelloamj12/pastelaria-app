@@ -109,6 +109,7 @@ export default function FinalizacaoScreen({ navigation }) {
         numero: pedido.numero,
         total: pedido.total,
         status: pedido.status,
+        telefone: telefone.trim(),
       });
     } catch (error) {
       console.error('Erro ao finalizar pedido:', error);
