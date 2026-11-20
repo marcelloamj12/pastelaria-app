@@ -13,6 +13,9 @@
 // =====================================================================
 
 import { supabase } from '../lib/supabase';
+import {
+  buscarHistoricoAcompanhamento,
+} from './acompanhamentoPedidoStorage'; 
 
 /** Rótulos de status para exibir na tela de Pedidos. */
 export const STATUS_PEDIDO = {
@@ -173,6 +176,38 @@ export async function buscarPedido(pedidoId, telefone) {
  * Requisito: ativar Realtime na tabela pedidos
  * (Supabase > Database > Replication > pedidos).
  */
+
+    /**
+ * Busca o histórico de pedidos salvos no dispositivo.
+ * Recupera os detalhes de cada pedido pelo serviço existente.
+ */
+export async function buscarHistoricoPedidos() {
+  const historico = await buscarHistoricoAcompanhamento();
+
+  if (!historico.length) {
+    return [];
+  }
+
+  // Consulta todos os pedidos sem deixar uma falha interromper as demais.
+  const resultados = await Promise.allSettled(
+    historico.map(({ pedidoId, telefone }) =>
+      buscarPedido(pedidoId, telefone)
+    )
+  );
+
+  // Mantém somente os pedidos consultados com sucesso.
+  const pedidos = resultados
+    .filter((resultado) => resultado.status === 'fulfilled')
+    .map((resultado) => resultado.value)
+    .filter((pedido) => pedido);
+
+  // Organiza os pedidos do mais recente para o mais antigo.
+  return pedidos.sort(
+    (a, b) =>
+      new Date(b.criado_em) - new Date(a.criado_em)
+  );
+}
+
 export function acompanharPedido(pedidoId, aoAtualizar) {
   const canal = supabase
     .channel(`pedido:${pedidoId}`)
