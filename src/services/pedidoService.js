@@ -188,13 +188,21 @@ export async function buscarHistoricoPedidos() {
     return [];
   }
 
-  const resultados = await Promise.all(
+  // Consulta todos os pedidos sem deixar uma falha interromper as demais.
+  const resultados = await Promise.allSettled(
     historico.map(({ pedidoId, telefone }) =>
       buscarPedido(pedidoId, telefone)
     )
   );
 
-  return resultados.sort(
+  // Mantém somente os pedidos consultados com sucesso.
+  const pedidos = resultados
+    .filter((resultado) => resultado.status === 'fulfilled')
+    .map((resultado) => resultado.value)
+    .filter((pedido) => pedido);
+
+  // Organiza os pedidos do mais recente para o mais antigo.
+  return pedidos.sort(
     (a, b) =>
       new Date(b.criado_em) - new Date(a.criado_em)
   );
