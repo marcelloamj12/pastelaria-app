@@ -32,6 +32,7 @@ export default function PedidoConfirmadoScreen({
   const numero = route.params?.numero;
   const status = route.params?.status;
   const pedidoId = route.params?.pedidoId;
+  const telefone = route.params?.telefone;
 
   const [enviando, setEnviando] = useState(false);
 
@@ -53,7 +54,9 @@ export default function PedidoConfirmadoScreen({
     try {
       setEnviando(true);
 
-      const pedido = await buscarPedido(pedidoId);
+      console.log('INICIANDO BUSCA DO PEDIDO');
+      const pedido = await buscarPedido(pedidoId, telefone);
+      console.log('BUSCA FINALIZADA:', pedido);
 
       if (!pedido) {
         throw new Error('Pedido não encontrado.');
@@ -225,10 +228,29 @@ export default function PedidoConfirmadoScreen({
         o acompanhamento.
       </Text>
 
+      
+{/* Botão do WhatsApp */}
+<TouchableOpacity
+  onPress={enviarWhatsApp}
+  activeOpacity={0.8}
+  style={{
+    backgroundColor: '#25D366',
+    padding: 16,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginBottom: 15,
+  }}
+>
+  <Text style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: 16 }}>
+    Enviar pedido pelo WhatsApp
+  </Text>
+</TouchableOpacity>
+
+
       {/* Botão de retorno */}
       <TouchableOpacity
         style={styles.botaoInicio}
-        onPress={voltarInicio}
+        onPress={() => navigation.popToTop()}
         activeOpacity={0.8}
       >
         <Text style={styles.textoBotaoInicio}>
