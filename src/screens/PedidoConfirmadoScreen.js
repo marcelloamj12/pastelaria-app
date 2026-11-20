@@ -6,8 +6,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   Linking,
-  Alert
+  Alert,
+  ScrollView,
 } from 'react-native';
+
+import { Ionicons } from '@expo/vector-icons';
+
 
 import {
   STATUS_PEDIDO,
@@ -18,7 +22,11 @@ import { cores } from '../theme/theme';
 
 const WHATSAPP_PASTELARIA = '5569992058880';
 
-export default function PedidoConfirmadoScreen({ route, navigation }) {
+
+export default function PedidoConfirmadoScreen({
+  route,
+  navigation,
+}) {
   const total = route.params?.total;
   const numero = route.params?.numero;
   const status = route.params?.status;
@@ -97,13 +105,20 @@ export default function PedidoConfirmadoScreen({ route, navigation }) {
       setEnviando(false);
     }
   }
+    const statusInfo = status
+    ? STATUS_PEDIDO[status]
+    : null;
 
-  function voltarInicio() {
-    navigation.popToTop();
+  function formatarPreco(valor) {
+    return `R$ ${Number(valor || 0)
+      .toFixed(2)
+      .replace('.', ',')}`;
   }
 
+  if (route.params?.pedidoId == null) {
   return (
     <View style={styles.container}>
+
       <Text style={styles.titulo}>
         Pedido Confirmado!
       </Text>
@@ -112,124 +127,82 @@ export default function PedidoConfirmadoScreen({ route, navigation }) {
         Seu pedido foi realizado com sucesso.
       </Text>
 
-      {numero != null && (
-        <Text style={styles.informacao}>
-          Número do pedido: {numero}
-        </Text>
-      )}
+      {numero && (
+  <Text>Número do pedido: {numero}</Text>
+    )}
 
-      {status && (
-        <Text style={styles.informacao}>
-          Status: {STATUS_PEDIDO[status]?.texto ?? status}
-        </Text>
-      )}
+    {status && (
+      <Text>
+        Status: {STATUS_PEDIDO[status]?.texto ?? status}
+      </Text>
+    )}
 
-      {total != null && (
+      {total !== undefined && (
         <Text style={styles.total}>
-          Total do pedido: R$ {formatarPreco(total)}
+          Total do pedido: R$ {total.toFixed(2)}
         </Text>
       )}
 
       <TouchableOpacity
-        style={[
-          styles.botaoWhatsApp,
-          enviando && styles.desabilitado
-        ]}
-        onPress={enviarWhatsApp}
-        disabled={enviando}
-      >
-        <Text style={styles.textoBotaoWhatsApp}>
-          {enviando
-            ? 'Preparando mensagem...'
-            : 'Enviar pedido pelo WhatsApp'}
-        </Text>
-      </TouchableOpacity>
+  style={styles.botaoInicio}
+  onPress={voltarInicio}
+>
+  <Text style={styles.textoBotaoInicio}>
+    Voltar ao Início
+  </Text>
+</TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.botaoInicio}
-        onPress={voltarInicio}
-      >
-        <Text style={styles.textoBotaoInicio}>
-          Voltar ao Início
-        </Text>
-      </TouchableOpacity>
     </View>
   );
 }
-
+}
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: cores.fundo,
-    padding: 20
-  },
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: cores.fundo,
+  padding: 20,
+},
+
+botaoInicio: {
+  backgroundColor: cores.primaria,
+  paddingVertical: 16,
+  paddingHorizontal: 24,
+  borderRadius: 12,
+  alignItems: 'center',
+  width: '100%',
+},
+
+textoBotaoInicio: {
+  color: cores.branco,
+  fontSize: 16,
+  fontWeight: '700',
+},
 
   titulo: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: cores.sucesso,
-    marginBottom: 20,
-    textAlign: 'center'
-  },
+  fontSize: 28,
+  fontWeight: '700',
+  color: cores.sucesso,
+  marginBottom: 20,
+  textAlign: 'center',
+},
 
   mensagem: {
-    fontSize: 16,
-    color: cores.textoSecundario,
-    lineHeight: 24,
-    marginBottom: 20,
-    textAlign: 'center'
-  },
-
-  informacao: {
-    fontSize: 16,
-    color: cores.texto,
-    marginBottom: 10,
-    textAlign: 'center'
-  },
+  fontSize: 16,
+  color: cores.textoSecundario,
+  lineHeight: 24,
+  marginBottom: 20,
+  textAlign: 'center',
+},
 
   total: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: cores.primaria,
-    marginTop: 16,
-    marginBottom: 30,
-    textAlign: 'center'
-  },
+  fontSize: 24,
+  fontWeight: '700',
+  color: cores.primaria,
+  marginTop: 16,
+  marginBottom: 30,
+  textAlign: 'center',
+},
 
-  botaoWhatsApp: {
-    backgroundColor: '#25D366',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    alignItems: 'center',
-    width: '100%',
-    marginBottom: 12
-  },
-
-  textoBotaoWhatsApp: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700'
-  },
-
-  botaoInicio: {
-    backgroundColor: cores.primaria,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    alignItems: 'center',
-    width: '100%'
-  },
-
-  textoBotaoInicio: {
-    color: cores.branco,
-    fontSize: 16,
-    fontWeight: '700'
-  },
-
-  desabilitado: {
-    opacity: 0.6
-  }
 });
