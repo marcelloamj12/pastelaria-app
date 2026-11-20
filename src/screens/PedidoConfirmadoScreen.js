@@ -30,6 +30,12 @@ export default function PedidoConfirmadoScreen({
       .replace('.', ',')}`;
   }
 
+  function voltarInicio() {
+    navigation.navigate('MainTabs', {
+      screen: 'Home',
+    });
+  }
+
   if (route.params?.pedidoId == null) {
   return (
     <View style={styles.container}>
