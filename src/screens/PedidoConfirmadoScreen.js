@@ -1,16 +1,28 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
+  Linking,
+  Alert,
   ScrollView,
+ 
 } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
-import { STATUS_PEDIDO } from '../services/pedidoService';
+
+
+import {
+  STATUS_PEDIDO,
+  buscarPedido
+} from '../services/pedidoService';
+
 import { cores } from '../theme/theme';
+
+const WHATSAPP_PASTELARIA = '5569992058880';
+
 
 export default function PedidoConfirmadoScreen({
   route,
@@ -19,8 +31,82 @@ export default function PedidoConfirmadoScreen({
   const total = route.params?.total;
   const numero = route.params?.numero;
   const status = route.params?.status;
+  const pedidoId = route.params?.pedidoId;
 
-  const statusInfo = status
+  const [enviando, setEnviando] = useState(false);
+
+  function formatarPreco(valor) {
+    return Number(valor || 0).toFixed(2).replace('.', ',');
+  }
+
+  async function enviarWhatsApp() {
+    if (enviando) return;
+
+    if (!pedidoId) {
+      Alert.alert(
+        'Atenção',
+        'Não foi possível identificar o pedido.'
+      );
+      return;
+    }
+
+    try {
+      setEnviando(true);
+
+      const pedido = await buscarPedido(pedidoId);
+
+      if (!pedido) {
+        throw new Error('Pedido não encontrado.');
+      }
+
+      const itens = pedido.itens_pedido || [];
+
+      const listaProdutos = itens.map(item =>
+        `• ${item.quantidade}x ${item.nome_produto} - R$ ${formatarPreco(item.subtotal)}`
+      ).join('\n');
+
+      const formasPagamento = {
+        pix: 'PIX',
+        dinheiro: 'Dinheiro',
+        cartao_credito: 'Cartão de crédito',
+        cartao_debito: 'Cartão de débito'
+      };
+
+      const mensagem = [
+        '*NOVO PEDIDO - PASTELARIA MILTÃO*',
+        '',
+        `*Pedido:* #${pedido.numero || numero || '---'}`,
+        `*Cliente:* ${pedido.clientes?.nome || 'Não informado'}`,
+        `*Telefone:* ${pedido.clientes?.telefone || 'Não informado'}`,
+        '',
+        '*PRODUTOS:*',
+        listaProdutos || 'Nenhum produto encontrado',
+        '',
+        `*Tipo:* ${pedido.tipo === 'entrega' ? 'Entrega' : 'Retirada'}`,
+        ...(pedido.tipo === 'entrega'
+          ? [`*Endereço:* ${pedido.endereco_entrega || 'Não informado'}`]
+          : []),
+        `*Pagamento:* ${formasPagamento[pedido.pagamento] || pedido.pagamento || 'Não informado'}`,
+        `*Total:* R$ ${formatarPreco(pedido.total)}`,
+        ...(pedido.observacoes
+          ? [`*Observações:* ${pedido.observacoes}`]
+          : [])
+      ].join('\n');
+
+      const url = `https://wa.me/${WHATSAPP_PASTELARIA}?text=${encodeURIComponent(mensagem)}`;
+
+      await Linking.openURL(url);
+
+    } catch (error) {
+      Alert.alert(
+        'Erro',
+        'Não foi possível abrir o WhatsApp: ' + error.message
+      );
+    } finally {
+      setEnviando(false);
+    }
+  }
+    const statusInfo = status
     ? STATUS_PEDIDO[status]
     : null;
 
@@ -28,12 +114,6 @@ export default function PedidoConfirmadoScreen({
     return `R$ ${Number(valor || 0)
       .toFixed(2)
       .replace('.', ',')}`;
-  }
-
-  function voltarInicio() {
-    navigation.navigate('MainTabs', {
-      screen: 'Home',
-    });
   }
 
   if (route.params?.pedidoId == null) {
