@@ -1,27 +1,32 @@
-import React, { useState } from 'react';
+
+import React, { useState, useCallback } from 'react';
+
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   ScrollView,
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
 
+import { useFocusEffect } from '@react-navigation/native';
 import {
-  listarPedidosPorTelefone,
+  buscarHistoricoPedidos,
   STATUS_PEDIDO,
 } from '../services/pedidoService';
-
+import {
+  buscarHistoricoAcompanhamento,
+} from '../services/acompanhamentoPedidoStorage';
 import { cores } from '../theme/theme';
 
 export default function MeusPedidosScreen({ navigation }) {
-  const [telefone, setTelefone] = useState('');
   const [pedidos, setPedidos] = useState([]);
-  const [carregando, setCarregando] = useState(false);
-  const [pesquisou, setPesquisou] = useState(false);
+  const [registrosLocais, setRegistrosLocais] = useState([]);
+  const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
+  const [aviso, setAviso] = useState('');
+  const [tentativa, setTentativa] = useState(0);
 
   function formatarPreco(valor) {
     return Number(valor || 0).toLocaleString('pt-BR', {
@@ -32,123 +37,157 @@ export default function MeusPedidosScreen({ navigation }) {
 
   function formatarData(data) {
     if (!data) return '';
-
     return new Date(data).toLocaleString('pt-BR');
   }
 
-  async function consultarPedidos() {
-    if (carregando) return;
+  useFocusEffect(
+    useCallback(() => {
+      let ativo = true;
 
-    const numeros = telefone.replace(/\D/g, '');
+      async function carregarHistorico() {
+        try {
+          setCarregando(true);
+          setErro('');
+          setAviso('');
 
-    if (numeros.length < 10 || numeros.length > 11) {
-      setErro('Informe um telefone válido com DDD.');
-      setPedidos([]);
-      setPesquisou(false);
+          const registros =
+            await buscarHistoricoAcompanhamento();
+
+          if (!ativo) return;
+
+          setRegistrosLocais(registros);
+
+          if (registros.length === 0) {
+            setPedidos([]);
+            return;
+          }
+
+          const resultado = await buscarHistoricoPedidos();
+
+          if (!ativo) return;
+
+          setPedidos(resultado);
+
+          if (resultado.length === 0) {
+            setErro(
+              'Não foi possível carregar os pedidos salvos. ' +
+              'Verifique sua conexão e tente novamente.'
+            );
+          } else if (resultado.length < registros.length) {
+            setAviso(
+              'Alguns pedidos não puderam ser atualizados. ' +
+              'Você pode tentar novamente.'
+            );
+          }
+        } catch (error) {
+          console.error('Erro ao carregar histórico:', error);
+
+          if (ativo) {
+            setPedidos([]);
+            setErro(
+              'Não foi possível carregar seu histórico de pedidos.'
+            );
+          }
+        } finally {
+          if (ativo) {
+            setCarregando(false);
+          }
+        }
+      }
+
+      carregarHistorico();
+
+      return () => {
+        ativo = false;
+      };
+    }, [tentativa])
+  );
+
+  function atualizarHistorico() {
+    setTentativa((valor) => valor + 1);
+  }
+
+  function acompanharPedido(pedido) {
+    const registro = registrosLocais.find(
+      (item) => String(item.pedidoId) === String(pedido.id)
+    );
+
+    if (!registro) {
+      setErro(
+        'Não foi possível identificar os dados locais deste pedido.'
+      );
       return;
     }
 
-    try {
-      setCarregando(true);
-      setErro('');
-      setPesquisou(false);
-      setPedidos([]);
-
-      const resultado = await listarPedidosPorTelefone(numeros);
-
-      setPedidos(resultado);
-      setPesquisou(true);
-    } catch (error) {
-  console.error('Erro ao consultar pedidos:', error);
-
-  setErro(
-    'Não foi possível consultar seus pedidos no momento. ' +
-    'Verifique sua conexão e tente novamente.'
-  );
-  setPesquisou(false);
-} finally {
-  setCarregando(false);
-}
+    navigation.getParent()?.navigate('AcompanharPedido', {
+      pedidoId: registro.pedidoId,
+      telefone: registro.telefone,
+    });
   }
 
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.conteudo}
-      keyboardShouldPersistTaps="handled"
     >
       <Text style={styles.titulo}>Meus Pedidos</Text>
 
       <Text style={styles.descricao}>
-        Informe o telefone utilizado na compra para consultar
-        seus pedidos.
+        Acompanhe os pedidos realizados neste dispositivo.
       </Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="(69) 99999-9999"
-        keyboardType="phone-pad"
-        value={telefone}
-        onChangeText={(valor) => {
-          setTelefone(valor);
-          setPedidos([]);
-          setPesquisou(false);
-          setErro('');
-        }}
-        maxLength={20}
-      />
-
-      <TouchableOpacity
-        style={[
-          styles.botao,
-          carregando && styles.botaoDesabilitado,
-        ]}
-        onPress={consultarPedidos}
-        disabled={carregando}
-      >
-        <Text style={styles.textoBotao}>
-          {carregando ? 'Consultando...' : 'Consultar Pedidos'}
-        </Text>
-      </TouchableOpacity>
-
       {carregando && (
-        <ActivityIndicator
-          size="large"
-          color={cores.primaria}
-          style={styles.carregamento}
-        />
-      )}
+        <View style={styles.centralizado}>
+          <ActivityIndicator
+            size="large"
+            color={cores.primaria}
+          />
 
-      {!!erro && (
-  <View style={styles.erroContainer}>
-    <Text style={styles.erro}>{erro}</Text>
-
-    {telefone.replace(/\D/g, '').length >= 10 &&
-      telefone.replace(/\D/g, '').length <= 11 && (
-        <TouchableOpacity
-          style={styles.botaoAtualizar}
-          onPress={consultarPedidos}
-          disabled={carregando}
-        >
-          <Text style={styles.textoAtualizar}>
-            Tentar novamente
-          </Text>
-        </TouchableOpacity>
-      )}
-  </View>
-)}
-
-      {!carregando && pesquisou && pedidos.length === 0 && (
-        <View style={styles.vazio}>
-          <Text style={styles.vazioTitulo}>
-            Nenhum pedido encontrado
-          </Text>
-
-          <Text style={styles.vazioDescricao}>
-            Não encontramos pedidos para o telefone informado.
+          <Text style={styles.textoAuxiliar}>
+            Carregando seu histórico de pedidos...
           </Text>
         </View>
       )}
+
+      {!carregando && !!erro && (
+        <View style={styles.avisoErro}>
+          <Text style={styles.textoErro}>
+            {erro}
+          </Text>
+
+          <TouchableOpacity
+            style={styles.botaoAtualizar}
+            onPress={atualizarHistorico}
+          >
+            <Text style={styles.textoAtualizar}>
+              Tentar novamente
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {!carregando && !!aviso && (
+        <View style={styles.avisoContainer}>
+          <Text style={styles.textoAuxiliar}>
+            {aviso}
+          </Text>
+        </View>
+      )}
+
+      {!carregando &&
+        !erro &&
+        registrosLocais.length === 0 && (
+          <View style={styles.vazio}>
+            <Text style={styles.vazioTitulo}>
+              Nenhum pedido encontrado
+            </Text>
+
+            <Text style={styles.vazioDescricao}>
+              Os pedidos feitos neste dispositivo
+              aparecerão aqui automaticamente.
+            </Text>
+          </View>
+        )}
 
       {!carregando && pedidos.map((pedido) => {
         const status = STATUS_PEDIDO[pedido.status] || {
@@ -157,7 +196,10 @@ export default function MeusPedidosScreen({ navigation }) {
         };
 
         return (
-          <View key={String(pedido.id)} style={styles.card}>
+          <View
+            key={String(pedido.id)}
+            style={styles.card}
+          >
             <View style={styles.cabecalhoCard}>
               <Text style={styles.numero}>
                 Pedido #{pedido.numero}
@@ -183,49 +225,51 @@ export default function MeusPedidosScreen({ navigation }) {
                 : 'Retirada'}
             </Text>
 
-            {(pedido.itens_pedido || []).map((item, index) => (
-              <Text
-                key={index}
-                style={styles.item}
-              >
-                {item.quantidade}x {item.nome_produto}
-              </Text>
-            ))}
+            {(pedido.itens_pedido || []).map(
+              (item, index) => (
+                <Text
+                  key={String(item.id ?? index)}
+                  style={styles.item}
+                >
+                  {item.quantidade}x {item.nome_produto}
+                </Text>
+              )
+            )}
 
             <View style={styles.rodapeCard}>
-              <Text style={styles.totalLabel}>Total</Text>
+              <Text style={styles.totalLabel}>
+                Total
+              </Text>
 
               <Text style={styles.total}>
                 {formatarPreco(pedido.total)}
               </Text>
-		            <TouchableOpacity
+            </View>
+
+            <TouchableOpacity
               style={styles.botaoAcompanhar}
-              onPress={() =>
-                navigation.navigate('AcompanharPedido', {
-                  pedidoId: pedido.id,
-                  telefone: telefone.replace(/\D/g, ''),
-                })
-              }
+              onPress={() => acompanharPedido(pedido)}
             >
               <Text style={styles.textoBotaoAcompanhar}>
                 Acompanhar pedido
               </Text>
             </TouchableOpacity>
-            </View>
           </View>
         );
       })}
 
-      {pesquisou && pedidos.length > 0 && (
-        <TouchableOpacity
-          style={styles.botaoAtualizar}
-          onPress={consultarPedidos}
-        >
-          <Text style={styles.textoAtualizar}>
-            Atualizar pedidos
-          </Text>
-        </TouchableOpacity>
-      )}
+      {!carregando &&
+        registrosLocais.length > 0 &&
+        pedidos.length > 0 && (
+          <TouchableOpacity
+            style={styles.botaoAtualizar}
+            onPress={atualizarHistorico}
+          >
+            <Text style={styles.textoAtualizar}>
+              Atualizar pedidos
+            </Text>
+          </TouchableOpacity>
+        )}
     </ScrollView>
   );
 }
@@ -255,42 +299,17 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
 
-  input: {
-    backgroundColor: cores.branco,
-    borderWidth: 1,
-    borderColor: cores.borda,
-    borderRadius: 10,
-    padding: 14,
-    fontSize: 16,
-    marginBottom: 12,
-  },
-
-  botao: {
-    backgroundColor: cores.primaria,
-    paddingVertical: 15,
-    borderRadius: 10,
+  centralizado: {
     alignItems: 'center',
-    marginBottom: 20,
+    justifyContent: 'center',
+    paddingVertical: 40,
   },
 
-  botaoDesabilitado: {
-    opacity: 0.6,
-  },
-
-  textoBotao: {
-    color: cores.branco,
-    fontSize: 15,
-    fontWeight: '700',
-  },
-
-  carregamento: {
-    marginTop: 25,
-  },
-
-  erro: {
-    color: cores.primaria,
+  textoAuxiliar: {
     fontSize: 14,
-    marginBottom: 16,
+    color: cores.textoSecundario,
+    marginTop: 10,
+    lineHeight: 20,
   },
 
   vazio: {
@@ -302,7 +321,7 @@ const styles = StyleSheet.create({
   },
 
   vazioTitulo: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '700',
     color: cores.texto,
     marginBottom: 10,
@@ -333,7 +352,7 @@ const styles = StyleSheet.create({
   },
 
   numero: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '700',
     color: cores.texto,
     flexShrink: 1,
@@ -386,28 +405,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  botaoAtualizar: {
-    borderWidth: 1,
-    borderColor: cores.primaria,
-    borderRadius: 10,
-    padding: 14,
-    alignItems: 'center',
-    marginTop: 5,
-  },
-
-  textoAtualizar: {
-    color: cores.primaria,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-
-  erroContainer: {
-  marginBottom: 16,
-  },
-
   botaoAcompanhar: {
     backgroundColor: cores.primaria,
-    paddingVertical: 12,
+    paddingVertical: 13,
     borderRadius: 10,
     alignItems: 'center',
     marginTop: 14,
@@ -419,4 +419,37 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
+  botaoAtualizar: {
+    borderWidth: 1,
+    borderColor: cores.primaria,
+    borderRadius: 10,
+    padding: 14,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+
+  textoAtualizar: {
+    color: cores.primaria,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
+  avisoErro: {
+    backgroundColor: '#FEE2E2',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 18,
+  },
+
+  textoErro: {
+    color: '#B91C1C',
+    fontSize: 14,
+  },
+
+  avisoContainer: {
+    backgroundColor: '#FFF7ED',
+    padding: 14,
+    borderRadius: 10,
+    marginBottom: 18,
+  },
 });
