@@ -133,7 +133,6 @@ O andamento é acompanhado em um Kanban no PraxiLab. Cada integrante cria os pr�
 - [Guia de deploy no Vercel](docs/deploy-vercel.md)
 - [Plano de testes e bugs encontrados](docs/plano-de-testes.md)
 - [Relatório técnico da N2](docs/relatorio-tecnico-n2.md)
-- [Roteiro da demonstração](docs/roteiro-demonstracao.md)
 
 ## ⚠️ Limitações conhecidas
 
