@@ -138,6 +138,7 @@ export default function AppNavigator() {
         name="Produto"
         component={ProdutoScreen}
         options={({ navigation }) => ({
+          title: 'Produto',
           header: () => (
             <LojaHeader
               onBack={() => navigation.goBack()}
@@ -150,6 +151,7 @@ export default function AppNavigator() {
         name="Finalizacao"
         component={FinalizacaoScreen}
         options={({ navigation }) => ({
+          title: 'Finalização',
           header: () => (
             <LojaHeader
               onBack={() => navigation.goBack()}
@@ -162,6 +164,7 @@ export default function AppNavigator() {
         name="PedidoConfirmado"
         component={PedidoConfirmadoScreen}
         options={{
+          title: 'Pedido confirmado',
           header: () => <LojaHeader />,
         }}
       />
@@ -170,6 +173,7 @@ export default function AppNavigator() {
         name="AcompanharPedido"
         component={AcompanharPedidoScreen}
         options={({ navigation }) => ({
+          title: 'Acompanhar pedido',
           header: () => (
             <LojaHeader
               onBack={() => navigation.goBack()}
