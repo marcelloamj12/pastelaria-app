@@ -54,9 +54,7 @@ export default function PedidoConfirmadoScreen({
     try {
       setEnviando(true);
 
-      console.log('INICIANDO BUSCA DO PEDIDO');
       const pedido = await buscarPedido(pedidoId, telefone);
-      console.log('BUSCA FINALIZADA:', pedido);
 
       if (!pedido) {
         throw new Error('Pedido não encontrado.');
