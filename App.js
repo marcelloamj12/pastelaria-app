@@ -53,7 +53,12 @@ export default function App() {
   return (
     <AuthProvider>
       <CarrinhoProvider>
-        <NavigationContainer>
+        <NavigationContainer
+          documentTitle={{
+            formatter: (options, route) =>
+              `${options?.title ?? route?.name ?? 'Início'} | Salgados do Miltão`,
+          }}
+        >
           <AppNavigator />
         </NavigationContainer>
       </CarrinhoProvider>
