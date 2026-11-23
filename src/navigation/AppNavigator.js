@@ -22,6 +22,7 @@ import ItensPedidosAdminScreen from '../screens/ItensPedidosAdminScreen';
 
 import { cores } from '../theme/theme';
 import { useCarrinho } from '../context/CarrinhoContext';
+import { useAuth } from '../context/AuthContext';
 import LojaHeader from '../components/LojaHeader';
 
 const Stack = createNativeStackNavigator();
@@ -123,7 +124,58 @@ function NavegacaoInferior() {
   );
 }
 
+// ---------------------------------------------------------------------
+// Duas pilhas de telas, conforme quem está usando o app:
+//   - admin logado: só o Painel Administrativo e as telas dele
+//     (sem Início, Cardápio, Meus pedidos e Carrinho, que são da loja)
+//   - qualquer outra pessoa: a loja normal, com a navegação inferior
+// A troca é automática: quando o perfil de admin carrega depois do
+// login, o app passa para o painel; quando o admin sai da conta, o
+// perfil some e o app volta para a loja.
+// Cartão: Painel do admin sem as telas da loja (Adrian Rafa)
+// ---------------------------------------------------------------------
 export default function AppNavigator() {
+  const { perfil } = useAuth();
+  const ehAdmin = perfil?.role === 'admin';
+
+  if (ehAdmin) {
+    return (
+      <Stack.Navigator initialRouteName="Admin">
+        <Stack.Screen
+          name="Admin"
+          component={AdminScreen}
+          options={{
+            title: 'Painel Administrativo',
+          }}
+        />
+
+        <Stack.Screen
+          name="ClientesAdmin"
+          component={ClientesAdminScreen}
+          options={{
+            title: 'Clientes',
+          }}
+        />
+
+        <Stack.Screen
+          name="PedidosAdmin"
+          component={PedidosAdminScreen}
+          options={{
+            title: 'Pedidos',
+          }}
+        />
+
+        <Stack.Screen
+          name="ItensPedidosAdmin"
+          component={ItensPedidosAdminScreen}
+          options={{
+            title: 'Itens dos Pedidos',
+          }}
+        />
+      </Stack.Navigator>
+    );
+  }
+
   return (
     <Stack.Navigator initialRouteName="MainTabs">
       <Stack.Screen
@@ -190,37 +242,6 @@ export default function AppNavigator() {
         }}
       />
 
-      <Stack.Screen
-        name="Admin"
-        component={AdminScreen}
-        options={{
-          title: 'Painel Administrativo',
-        }}
-      />
-
-      <Stack.Screen
-        name="ClientesAdmin"
-        component={ClientesAdminScreen}
-        options={{
-          title: 'Clientes',
-        }}
-      />
-
-      <Stack.Screen
-        name="PedidosAdmin"
-        component={PedidosAdminScreen}
-        options={{
-          title: 'Pedidos',
-        }}
-      />
-
-      <Stack.Screen
-        name="ItensPedidosAdmin"
-        component={ItensPedidosAdminScreen}
-        options={{
-          title: 'Itens dos Pedidos',
-        }}
-      />
     </Stack.Navigator>
   );
 }

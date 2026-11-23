@@ -10,15 +10,18 @@
 // perfil no banco e desloga quem não é admin. Esta tela só cuida de:
 //   1. mostrar os erros em português, dentro da própria tela
 //   2. mostrar que está carregando
-//   3. levar o admin para a tela de pedidos
-//   4. pular o login se o admin já estiver com a sessão aberta
+//   3. mostrar o carregando enquanto o perfil de admin é conferido
+//
+// Quem leva o admin para o Painel Administrativo é o AppNavigator:
+// assim que o perfil de admin carrega, ele troca as telas da loja
+// pelas telas do painel. Por isso esta tela não navega sozinha.
 //
 // Por que o erro aparece na tela e não num Alert: o Alert.alert do
 // React Native não faz nada na versão web, e o app vai para a Vercel.
 // Lá o usuário erraria a senha e não veria mensagem nenhuma.
 // =====================================================================
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -33,9 +36,6 @@ import {
 import { fazerLogin, fazerLogout } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
 import { cores, bordas } from '../theme/theme';
-
-// Para onde o admin vai depois de entrar.
-const DESTINO_APOS_LOGIN = 'PedidosAdmin';
 
 // ---------------------------------------------------------------------
 // O Supabase responde em inglês. Aqui cada mensagem conhecida vira uma
@@ -64,7 +64,7 @@ function traduzirErro(mensagem = '') {
   return mensagem || 'Não foi possível entrar. Tente novamente.';
 }
 
-export default function LoginScreen({ navigation }) {
+export default function LoginScreen() {
   const { sessao, perfil, carregando: carregandoSessao } = useAuth();
 
   const [email, setEmail] = useState('');
@@ -74,23 +74,6 @@ export default function LoginScreen({ navigation }) {
   const [erro, setErro] = useState('');
 
   const campoSenha = useRef(null);
-  const jaRedirecionou = useRef(false);
-
-  function irParaPainel() {
-    if (jaRedirecionou.current) return;
-    jaRedirecionou.current = true;
-    // replace e não navigate: assim o "voltar" não traz o admin
-    // de novo para a tela de login.
-    navigation.replace(DESTINO_APOS_LOGIN);
-  }
-
-  // Se o admin já está logado (abriu o app de novo, por exemplo),
-  // não faz sentido pedir a senha outra vez.
-  useEffect(() => {
-    if (!carregandoSessao && perfil?.role === 'admin') {
-      irParaPainel();
-    }
-  }, [carregandoSessao, perfil]);
 
   async function entrar() {
     if (entrando) return;
@@ -114,8 +97,8 @@ export default function LoginScreen({ navigation }) {
 
       await fazerLogin({ email: email.trim(), senha });
 
+      // Deu certo: o AppNavigator percebe o perfil de admin e abre o painel.
       setSenha('');
-      irParaPainel();
     } catch (e) {
       setErro(traduzirErro(e?.message));
     } finally {
