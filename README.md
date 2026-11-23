@@ -25,8 +25,10 @@ O cliente vê o cardápio por categorias, monta o carrinho, finaliza o pedido e 
 **Dono da pastelaria (com login):**
 
 - Entra pela "Área do dono" com e-mail e senha
+- Depois do login vê só o Painel Administrativo, sem as telas da loja
 - Vê os pedidos e muda o status (recebido, em preparo, pronto, entregue)
 - Vê os clientes e os itens de cada pedido
+- Sai pelo botão "Sair", que fica no canto de cima de todas as telas do painel e volta para a loja
 
 O pagamento e o WhatsApp são **mock-up** (simulação), como combinado com o professor: o app registra a forma de pagamento escolhida, mas não faz cobrança real.
 
@@ -120,7 +122,7 @@ npx expo start -c
 | ---------- | ---------------- |
 | Marcello Vieira da Silva (líder) | Coordenação, Kanban, revisão e merge dos PRs, deploy no Vercel, testes, limpeza do código e documentação |
 | José Luiz | Identidade visual do Figma, categorias, telas do cliente, carregamento e mensagens de erro, Acompanhar pedido e Meus pedidos |
-| Adrian Rafael Estevarengo de Matos | Testes do banco com o cardápio real, revisão da RLS e conferência no banco, telas de login e de clientes do admin |
+| Adrian Rafael Estevarengo de Matos | Testes do banco com o cardápio real, revisão da RLS e conferência no banco, telas de login e de clientes do admin, painel do admin separado da loja |
 | Antonio Neto | Carrinho com vários produtos, finalização, pedido confirmado, pagamento e WhatsApp (mock-up) |
 | Nicolas Rian Oliveira | Banco de dados, segurança (RLS), login do admin, serviços do painel, tela de pedidos do admin e histórico de pedidos |
 
@@ -137,6 +139,7 @@ O andamento é acompanhado em um Kanban no PraxiLab. Cada integrante cria os pr�
 
 ## ⚠️ Limitações conhecidas
 
+- Não foi feita a edição do cardápio pelo app: o dono não consegue cadastrar, editar ou remover produtos, trocar fotos, mudar preços ou categorias pelo painel. Hoje isso é feito direto no Supabase
 - Pagamento e WhatsApp são simulações (mock-up), sem cobrança real
 - "Meus pedidos" fica salvo no aparelho: se o cliente trocar de celular ou limpar os dados do app, o histórico some (o pedido continua no banco)
 - O status do pedido é atualizado a cada 10 segundos, e não instantaneamente

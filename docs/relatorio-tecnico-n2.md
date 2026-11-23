@@ -30,6 +30,8 @@ Na N1 foi entregue o fluxo básico (MVP). Na N2 o app foi ligado ao banco de dad
 | Carregando e mensagens de erro nas telas | Entregue |
 | Login do dono com e-mail e senha | Entregue |
 | Painel do dono: pedidos (mudar status), clientes e itens dos pedidos | Entregue |
+| Painel do dono separado da loja, com botão "Sair" em todas as telas do painel | Entregue |
+| Edição do cardápio pelo painel (produtos, fotos, preços e categorias) | Não feito |
 | Versão web publicada no Vercel | Entregue |
 
 Pagamento e WhatsApp são simulações (mock-up), como combinado com o professor.
@@ -107,6 +109,7 @@ Decisões de segurança:
 - Revisão das regras de segurança (RLS) e conferência dos dados no banco
 - Tela de login do dono
 - Tela de clientes do dono
+- Painel do dono separado das telas da loja, com o botão "Sair" no canto de cima de todas as telas do painel
 
 ### Antonio Neto
 
@@ -164,6 +167,7 @@ A versão web está em https://pastelariamiltaoo.vercel.app. O Vercel gera o sit
 
 ## 11. Limitações e próximos passos
 
+- Não foi feita a edição do cardápio pelo app: o dono não consegue cadastrar, editar ou remover produtos, trocar fotos, mudar preços ou categorias pelo painel. Hoje isso é feito direto no Supabase. Esse seria o próximo passo mais importante para o dono ter autonomia.
 - Pagamento e WhatsApp são simulações. Um próximo passo seria integrar um meio de pagamento real (ex.: Pix) e a API oficial do WhatsApp.
 - "Meus pedidos" fica salvo no aparelho. Se o cliente trocar de celular, o histórico some (o pedido continua no banco). Um login opcional para o cliente resolveria isso.
 - O status atualiza a cada 10 segundos. Poderia usar atualização em tempo real (Supabase Realtime).
