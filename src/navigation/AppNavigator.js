@@ -24,6 +24,7 @@ import { cores } from '../theme/theme';
 import { useCarrinho } from '../context/CarrinhoContext';
 import { useAuth } from '../context/AuthContext';
 import LojaHeader from '../components/LojaHeader';
+import BotaoSairAdmin from '../components/BotaoSairAdmin';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -140,7 +141,13 @@ export default function AppNavigator() {
 
   if (ehAdmin) {
     return (
-      <Stack.Navigator initialRouteName="Admin">
+      <Stack.Navigator
+        initialRouteName="Admin"
+        screenOptions={{
+          // "Sair" no canto direito de todas as telas do admin
+          headerRight: () => <BotaoSairAdmin />,
+        }}
+      >
         <Stack.Screen
           name="Admin"
           component={AdminScreen}
