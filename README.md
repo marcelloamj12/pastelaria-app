@@ -120,9 +120,9 @@ npx expo start -c
 | ---------- | ---------------- |
 | Marcello Vieira da Silva (líder) | Coordenação, Kanban, revisão e merge dos PRs, deploy no Vercel, testes, limpeza do código e documentação |
 | José Luiz | Identidade visual do Figma, categorias, telas do cliente, carregamento e mensagens de erro, Acompanhar pedido e Meus pedidos |
-| Adrian Rafael Estevarengo de Matos | Testes do banco com o cardápio real, telas de login, pedidos e clientes do admin |
+| Adrian Rafael Estevarengo de Matos | Testes do banco com o cardápio real, revisão da RLS e conferência no banco, telas de login e de clientes do admin |
 | Antonio Neto | Carrinho com vários produtos, finalização, pedido confirmado, pagamento e WhatsApp (mock-up) |
-| Nicolas Rian Oliveira | Banco de dados, segurança (RLS), login do admin, serviços do painel e histórico de pedidos |
+| Nicolas Rian Oliveira | Banco de dados, segurança (RLS), login do admin, serviços do painel, tela de pedidos do admin e histórico de pedidos |
 
 ## 📋 Gerenciamento do projeto
 
@@ -133,6 +133,7 @@ O andamento é acompanhado em um Kanban no PraxiLab. Cada integrante cria os pr�
 - [Guia de deploy no Vercel](docs/deploy-vercel.md)
 - [Plano de testes e bugs encontrados](docs/plano-de-testes.md)
 - [Relatório técnico da N2](docs/relatorio-tecnico-n2.md)
+- [Documentação final em PDF](docs/Documentacao_Pastelaria_Miltao.pdf)
 
 ## ⚠️ Limitações conhecidas
 
