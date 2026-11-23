@@ -10,7 +10,7 @@
 //   - busca por nome ou telefone
 //   - para cada cliente: telefone, e-mail, desde quando é cliente,
 //     quantos pedidos fez, quanto já gastou e a data do último pedido
-//   - botão "Sair" no topo, que encerra a sessão do admin
+//   - botão "Sair" no topo, que encerra a sessão e volta para a loja
 //
 // De onde vêm os dados: dos serviços do Nicolas (adminService).
 //   listarClientesAdmin()  -> tabela clientes
@@ -182,14 +182,13 @@ export default function ClientesAdminScreen({ navigation }) {
   const [semPermissao, setSemPermissao] = useState(false);
   const [saindo, setSaindo] = useState(false);
 
-  // Encerra a sessão do admin e volta para a Home, limpando o histórico
-  // para o "voltar" não reabrir o painel.
+  // Encerra a sessão do admin. Sem a sessão, o AppNavigator troca
+  // sozinho as telas do painel pelas da loja, então não precisa navegar.
   const sair = useCallback(async () => {
     if (saindo) return;
     setSaindo(true);
     try {
       await fazerLogout();
-      navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
     } catch (e) {
       setErro('Não foi possível sair agora. Tente de novo.');
       setSaindo(false);
@@ -313,10 +312,10 @@ export default function ClientesAdminScreen({ navigation }) {
         {semPermissao ? (
           <Pressable
             style={({ pressed }) => [styles.botao, pressed && styles.botaoPressionado]}
-            onPress={() => navigation.replace('Login')}
+            onPress={sair}
             accessibilityRole="button"
           >
-            <Text style={styles.textoBotao}>Ir para o login</Text>
+            <Text style={styles.textoBotao}>Sair e entrar de novo</Text>
           </Pressable>
         ) : (
           <Pressable
