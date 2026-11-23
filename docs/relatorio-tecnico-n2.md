@@ -90,7 +90,7 @@ Decisões de segurança:
 - Testes do app a cada merge e caça aos bugs (ver plano de testes)
 - Publicação da versão web no Vercel (configuração, variáveis e domínio)
 - Código: título das abas com o nome da loja, títulos com acento nas telas, logo no ícone do site e do app, remoção de logs que mostravam dados do cliente e remoção de arquivos antigos
-- Documentação: README, guia de deploy, plano de testes, relatório técnico e roteiro da apresentação
+- Documentação: README, guia de deploy, plano de testes, relatório técnico e documentação final em PDF
 
 ### José Luiz
 
@@ -104,8 +104,9 @@ Decisões de segurança:
 ### Adrian Rafael Estevarengo de Matos
 
 - Cardápio real com 26 produtos no banco e testes do banco
+- Revisão das regras de segurança (RLS) e conferência dos dados no banco
 - Tela de login do dono
-- Telas do painel do dono: pedidos e clientes
+- Tela de clientes do dono
 
 ### Antonio Neto
 
@@ -119,7 +120,7 @@ Decisões de segurança:
 
 - Estrutura do banco, regras de segurança (RLS) e perfis de administrador
 - Função de gravar o pedido com preço calculado no banco
-- Login do dono e serviços do painel
+- Login do dono, serviços do painel e tela de pedidos do dono
 - Funções de consulta segura do pedido e histórico salvo no aparelho
 
 ### Commits na N2 (a partir de 10/11/2026)
